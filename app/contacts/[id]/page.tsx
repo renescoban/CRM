@@ -15,7 +15,9 @@ import { useToast } from "@/hooks/use-toast"
 import ActivityList from '@/components/ActivityList'
 import { updateContact, deleteContact, addActivity, updateActivity, deleteActivity, addCustomField, addTag, removeTag } from '../../../lib/actions'
 import { contacts } from '@/data/contacts'
-import { Contact, Activity, ActivityType, CustomField } from '@/types'
+import { orders } from '@/data/orders'
+import { Contact, Activity, ActivityType, CustomField, Order } from '@/types'
+import Link from "next/link";
 
 export default function ContactDetails({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -25,7 +27,6 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
   if (!contact) {
     return <div>Contact not found</div>
   }
-
   const [name, setName] = useState(contact.name)
   const [email, setEmail] = useState(contact.email)
   const [phone, setPhone] = useState(contact.phone)
@@ -38,6 +39,8 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
   const [newCustomFieldValue, setNewCustomFieldValue] = useState('')
   const [newTag, setNewTag] = useState('')
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+  const contactOrders = orders.filter(order => order.contactId === contact.id)
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -209,19 +212,11 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
-        <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="info">Info</TabsTrigger>
-            <TabsTrigger value="activities">Activities</TabsTrigger>
-            <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
-            <TabsTrigger value="tags">Tags</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="info">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Contact Information</CardTitle>
-                <CardDescription>View and edit basic contact details</CardDescription>
               </CardHeader>
               <CardContent>
                 {isEditing ? (
@@ -265,13 +260,106 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="activities">
+            <Tabs defaultValue="custom-fields" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+                <TabsTrigger value="tags">Tags</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="custom-fields">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Custom Fields</CardTitle>
+                    <CardDescription>Manage additional information about the contact</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {contact.customFields && contact.customFields.map((field) => (
+                      <div key={field.id} className="mb-2">
+                        <strong>{field.name}:</strong> {field.value}
+                      </div>
+                    ))}
+                    <form onSubmit={handleAddCustomField} className="mt-4 space-y-4">
+                      <div>
+                        <Label htmlFor="customFieldName">Field Name</Label>
+                        <Input
+                          id="customFieldName"
+                          value={newCustomFieldName}
+                          onChange={(e) => setNewCustomFieldName(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customFieldValue">Field Value</Label>
+                        <Input
+                          id="customFieldValue"
+                          value={newCustomFieldValue}
+                          onChange={(e) => setNewCustomFieldValue(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button type="submit">Add Custom Field</Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="tags">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Tags</CardTitle>
+                    <CardDescription>Manage tags associated with this contact</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {tags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {tag}
+                          <button onClick={() => handleRemoveTag(tag)} className="ml-2 text-xs">&times;</button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <form onSubmit={handleAddTag} className="flex gap-2">
+                      <Input
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        placeholder="New tag"
+                        className="flex-grow"
+                      />
+                      <Button type="submit">Add Tag</Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {contactOrders.length === 0 ? (
+                  <p>No orders found for this contact.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {contactOrders.map((order) => (
+                      <li key={order.id} className="flex justify-between items-center">
+                        <span>Order #{order.id} - ${order.total.toFixed(2)}</span>
+                        <Link href={`/orders/${order.id}`}>
+                          <Button variant="outline" size="sm">View</Button>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="md:col-span-1">
             <Card>
               <CardHeader>
                 <CardTitle>Activities</CardTitle>
-                <CardDescription>Manage contact activities and interactions</CardDescription>
               </CardHeader>
               <CardContent>
                 <ActivityList 
@@ -279,112 +367,37 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
                   onEdit={setEditingActivity} 
                   onDelete={handleDeleteActivity}
                 />
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="mt-4">Add New Activity</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add New Activity</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleAddActivity} className="space-y-4">
-                      <div>
-                        <Label htmlFor="activityType">Activity Type</Label>
-                        <Select onValueChange={(value: ActivityType) => setNewActivityType(value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select activity type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="call">Call</SelectItem>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="meeting">Meeting</SelectItem>
-                            <SelectItem value="note">Note</SelectItem>
-                            <SelectItem value="task">Task</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="activityDescription">Description</Label>
-                        <Textarea
-                          id="activityDescription"
-                          value={newActivityDescription}
-                          onChange={(e) => setNewActivityDescription(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <Button type="submit">Add Activity</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="custom-fields">
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Fields</CardTitle>
-                <CardDescription>Manage additional information about the contact</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {contact.customFields && contact.customFields.map((field) => (
-                  <div key={field.id} className="mb-2">
-                    <strong>{field.name}:</strong> {field.value}
-                  </div>
-                ))}
-                <form onSubmit={handleAddCustomField} className="mt-4 space-y-4">
+                <form onSubmit={handleAddActivity} className="mt-4 space-y-4">
                   <div>
-                    <Label htmlFor="customFieldName">Field Name</Label>
-                    <Input
-                      id="customFieldName"
-                      value={newCustomFieldName}
-                      onChange={(e) => setNewCustomFieldName(e.target.value)}
+                    <Label htmlFor="activityType">Activity Type</Label>
+                    <Select onValueChange={(value: ActivityType) => setNewActivityType(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select activity type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="call">Call</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="meeting">Meeting</SelectItem>
+                        <SelectItem value="note">Note</SelectItem>
+                        <SelectItem value="task">Task</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="activityDescription">Description</Label>
+                    <Textarea
+                      id="activityDescription"
+                      value={newActivityDescription}
+                      onChange={(e) => setNewActivityDescription(e.target.value)}
                       required
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="customFieldValue">Field Value</Label>
-                    <Input
-                      id="customFieldValue"
-                      value={newCustomFieldValue}
-                      onChange={(e) => setNewCustomFieldValue(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button type="submit">Add Custom Field</Button>
+                  <Button type="submit">Add Activity</Button>
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="tags">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tags</CardTitle>
-                <CardDescription>Manage tags associated with this contact</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {tags.map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-sm">
-                      {tag}
-                      <button onClick={() => handleRemoveTag(tag)} className="ml-2 text-xs">&times;</button>
-                    </Badge>
-                  ))}
-                </div>
-                <form onSubmit={handleAddTag} className="flex gap-2">
-                  <Input
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="New tag"
-                    className="flex-grow"
-                  />
-                  <Button type="submit">Add Tag</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
 
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent>
@@ -442,4 +455,3 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
     </div>
   )
 }
-

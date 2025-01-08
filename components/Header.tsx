@@ -16,6 +16,11 @@ export default function Header() {
             </Link>
           </li>
           <li>
+            <Link href="/orders" className="text-blue-600 hover:text-blue-800">
+              Orders
+            </Link>
+          </li>
+          <li>
             <Link href="/reports" className="text-blue-600 hover:text-blue-800">
               Reports
             </Link>

@@ -25,3 +25,29 @@ export interface Contact {
   tags: string[]
 }
 
+
+export interface Payment {
+  id: number;
+  amount: number;
+  date: string;
+  method: 'credit_card' | 'bank_transfer' | 'cash' | 'other';
+  notes?: string;
+}
+
+export interface Order {
+  id: number;
+  contactId: number;
+  products: {
+    name: string;
+    price: number;
+    count: number;
+    stock?: number;
+  }[];
+  total: number;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  estimatedDelivery: string;
+  orderNote?: string;
+  createdAt: string;
+  payments: Payment[];
+  remainingBalance: number;
+}
