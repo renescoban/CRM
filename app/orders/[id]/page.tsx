@@ -42,7 +42,7 @@ export default function OrderDetails({ params }: { params: Promise<{ id: string 
     return <div>Order not found</div>
   }
 
-  const contact = contacts.find(c => c.id === order.contactId)
+  const contact = contacts.find(c => c.parseInt(id) === order.contactId)
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
