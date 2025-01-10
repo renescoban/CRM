@@ -3,7 +3,7 @@ import { ContactModel } from '@/models/ContactModel'
 
 type Params = Promise<{ id: string }>;
 
-export async function GET({ params }: { params:Params }) {
+export async function GET(req: Request,{ params }: { params:Params }) {
   const  {id}  = await params
 
 const supabase = createClient()
@@ -40,7 +40,7 @@ export async function PUT(  request: Request,  { params }: { params:Params}) {
     return Response.json({ error: 'Error updating user' }, { status: 500 });
   }
 }
-export async function DELETE(  { params }: { params: Params }) {
+export async function DELETE( req: Request, { params }: { params: Params }) {
   const {id} = await params
 
   const supabase = createClient();
