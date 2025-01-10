@@ -1,7 +1,8 @@
 'use client'
 import { use } from "react";
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import {  Loader2  } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,6 +28,7 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
   if (!contact) {
     return <div>Contact not found</div>
   }
+  const [fcontact, setContact] = useState({})
   const [name, setName] = useState(contact.name)
   const [email, setEmail] = useState(contact.email)
   const [phone, setPhone] = useState(contact.phone)
@@ -39,9 +41,32 @@ export default function ContactDetails({ params }: { params: Promise<{ id: strin
   const [newCustomFieldValue, setNewCustomFieldValue] = useState('')
   const [newTag, setNewTag] = useState('')
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
 
   const contactOrders = orders.filter(order => order.contactId === contact.id)
 
+    useEffect(() => {
+      fetchContact(id)
+    }, [])
+
+    const fetchContact = async (id: String ) => {
+      setIsLoading(true)
+      try {
+        const response = await fetch(`/api/contact/${id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setContact(data)
+          console.log(fcontact)
+        } else {
+          console.error('Failed to fetch goals')
+        }
+      } catch (error) {
+        console.error('Error fetching goals:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     try {

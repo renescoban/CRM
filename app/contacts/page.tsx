@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import {  Loader2  } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ContactCard from '@/components/ContactCard'
@@ -10,6 +11,29 @@ import { Contact } from '@/types'
 
 export default function Contacts() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [concatcs, setContacts] = useState<Contact[]>([])
+
+  useEffect(() => {
+    fetchContacts()
+  }, [])
+
+  const fetchContacts = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/contacts')
+      if (response.ok) {
+        const data = await response.json()
+        setContacts(data)
+      } else {
+        console.error('Failed to fetch contacts')
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -19,6 +43,7 @@ export default function Contacts() {
 
   return (
     <div className="">
+    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
             <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Contacts</h1>
@@ -43,6 +68,7 @@ export default function Contacts() {
           ))}
         </div>
       </main>
+}
     </div>
   )
 }
