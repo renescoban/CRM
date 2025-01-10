@@ -1,6 +1,6 @@
 'use server'
 
-import { Contact, Activity, CustomField } from '@/types'
+import { Contact, Activity, CustomField, Order, Payment } from '@/types'
 
 export async function addContact(data: Omit<Contact, 'id' | 'activities'>) {
   // In a real application, you would save this data to a database
