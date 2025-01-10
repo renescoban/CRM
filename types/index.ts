@@ -1,28 +1,46 @@
 export type ActivityType = 'call' | 'email' | 'meeting' | 'note' | 'task'
 
+export interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Activity {
-  id: number
-  contactId: number
-  type: ActivityType
-  description: string
-  date: string
-  dueDate?: string
+  id: string;
+  contact_id: string;
+  type: 'call' | 'email' | 'meeting' | 'note' | 'task';
+  description: string;
+  date: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CustomField {
-  id: number
-  name: string
-  value: string
+  id: string;
+  contact_id: string;
+  name: string;
+  value: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Contact {
-  id: number
-  name: string
-  email: string
-  phone: string
-  activities: Activity[]
-  customFields: CustomField[]
-  tags: string[]
+export interface Tag {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactTag {
+  id: string;
+  contact_id: string;
+  tag_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 
