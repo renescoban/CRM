@@ -20,7 +20,7 @@ export default function AddContact() {
     e.preventDefault()
     setIsLoading(true)
     try {
-      const response = await fetch("/api/contact",{
+      const response = await fetch("/api/contacts",{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body:JSON.stringify({ name, email, phone, customFields: [], tags: [] }),

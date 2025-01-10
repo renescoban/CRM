@@ -6,13 +6,13 @@ import {  Loader2  } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ContactCard from '@/components/ContactCard'
-import { contacts } from '@/data/contacts'
+//import { contacts } from '@/data/contacts'
 import { Contact } from '@/types'
 
 export default function Contacts() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [concatcs, setContacts] = useState<Contact[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([])
 
   useEffect(() => {
     fetchContacts()
