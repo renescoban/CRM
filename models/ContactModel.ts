@@ -26,7 +26,7 @@ export class ContactModel {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('contacts')
-      .select('*')
+      .select('        *')
       .eq('id', id)
       .single()
     if (error) throw error

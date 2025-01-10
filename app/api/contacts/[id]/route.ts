@@ -1,8 +1,10 @@
 import { createClient } from "@/utils/supabase/server"
 import { ContactModel } from '@/models/ContactModel'
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const  id  = (await params).id
+type Params = Promise<{ id: string }>;
+
+export async function GET({ params }: { params:Params }) {
+  const  {id}  = await params
 
 const supabase = createClient()
     const { data: { user } } = await (await supabase).auth.getUser()
@@ -19,8 +21,8 @@ const supabase = createClient()
   }
 }
 
-export async function PUT(  request: Request,  { params }: { params: Promise<{ id: string }> }) {
-  const  id  = (await params).id 
+export async function PUT(  request: Request,  { params }: { params:Params}) {
+  const  {id}  = await params
 
   const supabase = createClient();
   const {
@@ -38,8 +40,8 @@ export async function PUT(  request: Request,  { params }: { params: Promise<{ i
     return Response.json({ error: 'Error updating user' }, { status: 500 });
   }
 }
-export async function DELETE(  request: Request,  { params }: { params: Promise<{ id: string }> }) {
-  const  id  = (await params).id 
+export async function DELETE(  { params }: { params: Params }) {
+  const {id} = await params
 
   const supabase = createClient();
   const {

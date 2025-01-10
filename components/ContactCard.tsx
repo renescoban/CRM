@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Contact {
-  id: number
+  id: string
   name: string
   email: string
   phone: string

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,9 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from '@/hooks/use-toast'
-import { contacts } from '@/data/contacts'
 import { makeOrder } from '@/lib/actions'
-import { Order } from '@/types'
+import { Contact, Order } from '@/types'
 
 export default function MakeOrder() {
   const router = useRouter()
@@ -19,15 +18,27 @@ export default function MakeOrder() {
   const [status, setStatus] = useState<Order['status']>('pending')
   const [estimatedDelivery, setEstimatedDelivery] = useState('')
   const [orderNote, setOrderNote] = useState('')
+  const [contacts, setContacts] = useState<Contact[]>([])
+  useEffect(() => {
+    fetch('/api/contacts')
+      .then(res => res.json())
+      .then(data => setContacts(data))
+      .catch(err => console.error('Error fetching contacts:', err))
+  }, [])
 
   const { toast } = useToast()
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       const total = products.reduce((sum, product) => sum + product.price * product.count, 0)
-      await makeOrder({
-        contactId: parseInt(contactId),
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify( 
+          {
+        contact_id: contactId,
         products,
         total,
         status,
@@ -35,7 +46,7 @@ export default function MakeOrder() {
         orderNote,
         payments: [],
         remainingBalance: total,
-      })
+      })})
       router.push('/orders')
       toast({
         title: "Order created",

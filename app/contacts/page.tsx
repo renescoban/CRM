@@ -6,7 +6,6 @@ import {  Loader2  } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ContactCard from '@/components/ContactCard'
-//import { contacts } from '@/data/contacts'
 import { Contact } from '@/types'
 
 export default function Contacts() {

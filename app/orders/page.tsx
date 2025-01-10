@@ -1,11 +1,21 @@
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import Header from '@/components/Header'
 import OrderList from '@/components/OrderList'
 import OrdersSummary from '@/components/OrdersSummary'
-import { orders } from '@/data/orders'
+import { Order } from "@/types"
 
-export default function Orders() {
+async function getOrdersData():  Promise<Order[]>{
+  const res = await fetch(`/api/order/`, { cache: 'no-store' })
+  if (!res.ok) {
+    throw new Error('Failed to fetch orders')
+  }
+  return res.json()
+}
+
+export default async function Orders() {
+
+const orders  = await getOrdersData()
+
   return (
     <div className="min-h-screen ">
       <main className="container mx-auto px-4 py-8">
