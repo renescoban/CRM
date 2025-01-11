@@ -11,7 +11,7 @@ export const orders: Order[] = [
     ],
     total: 130,
     status: 'processing',
-    estimatedDelivery: '2023-06-15',
+    estimated_delivery: '2023-06-15',
     orderNote: 'Please handle with care',
     createdAt: '2023-06-01',
     payments: [
@@ -27,7 +27,7 @@ export const orders: Order[] = [
     ],
     total: 100,
     status: 'shipped',
-    estimatedDelivery: '2023-06-10',
+    estimated_delivery: '2023-06-10',
     createdAt: '2023-06-02',
     payments: [
       { id: 1, amount: 75, date: '2023-06-03', method: 'bank_transfer' },
@@ -43,7 +43,7 @@ export const orders: Order[] = [
     ],
     total: 300,
     status: 'pending',
-    estimatedDelivery: '2023-06-20',
+    estimated_delivery: '2023-06-20',
     createdAt: '2023-06-05',
     payments: [],
     remainingBalance: 300,
@@ -56,7 +56,7 @@ export const orders: Order[] = [
     ],
     total: 150,
     status: 'delivered',
-    estimatedDelivery: '2023-06-08',
+    estimated_delivery: '2023-06-08',
     createdAt: '2023-06-03',
     payments: [
       { id: 1, amount: 150, date: '2023-06-04', method: 'credit_card' },

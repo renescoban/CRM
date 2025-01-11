@@ -1,15 +1,6 @@
 import { createClient } from "@/utils/supabase/server"
 import { Payment } from "@/types"
 
-export interface Payment2 {
-  id: string
-  order_id: string
-  amount: number
-  method: 'credit_card' | 'bank_transfer' | 'cash' | 'other'
-  notes?: string
-  created_at: string
-}
-
 export class PaymentModel {
   static async getAll() {
     const supabase= await createClient() 

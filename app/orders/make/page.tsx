@@ -42,10 +42,10 @@ export default function MakeOrder() {
         products,
         total,
         status,
-        estimatedDelivery,
-        orderNote,
-        payments: [],
-        remainingBalance: total,
+        estimated_delivery: estimatedDelivery,
+        note:orderNote,
+        //payments: [],
+        remaining_balance: total,
       })})
       router.push('/orders')
       toast({

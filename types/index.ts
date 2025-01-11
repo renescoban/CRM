@@ -45,28 +45,33 @@ export interface ContactTag {
 }
 
 
-export interface Payment {
-  id: number;
-  amount: number;
-  date: string;
-  method: 'credit_card' | 'bank_transfer' | 'cash' | 'other';
-  notes?: string;
-}
 
 export interface Order {
-  id: number;
-  contactId: number;
+  id: string;
+  contact_id: string;
+  total: number;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   products: {
     name: string;
     price: number;
     count: number;
-    stock?: number;
   }[];
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  estimatedDelivery: string;
-  orderNote?: string;
-  createdAt: string;
-  payments: Payment[];
-  remainingBalance: number;
+  note?: string;
+  created_at: string;
+  updated_at: string;
+  contact?: {
+    name: string;
+  };
+  payments?: Payment[];
+}
+
+export interface Payment {
+  id: string;
+  order_id: string;
+  amount: number;
+  method: 'credit_card' | 'bank_transfer' | 'cash' | 'other';
+  status: 'pending' | 'completed' | 'failed';
+  note?: string;
+  created_at: string;
+  updated_at: string;
 }

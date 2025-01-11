@@ -2,27 +2,25 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Contact, Activity, CustomField } from '@/types'
+import { ContactModel } from '@/models/ContactModel'
 import { Badge } from "@/components/ui/badge"
 import ActivityList from '@/components/ActivityList'
-import { Contact, Activity, CustomField } from '@/types'
+
 
 async function getContactData(id: string): Promise<{
   contact: Contact;
 }> {
-  const contactRes = await fetch(`/api/contacts/${id}`, { cache: 'no-store' })
-  if (!contactRes.ok) {
-    notFound()
-  }
-  const contact = await contactRes.json()
-  return { contact }
+  const contact = await ContactModel.getById(id)
+  return contact 
 }
 
 export default async function ContactDetails({ params }: { params: Promise<{ id: string }> }) {
   const{ id }= await params
-  const { contact } = await getContactData(id)
+  const  contact  = await getContactData(id)
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen ">
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Contact Details</h1>
@@ -42,14 +40,12 @@ export default async function ContactDetails({ params }: { params: Promise<{ id:
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p><strong>Name:</strong> {contact.name}</p>
-                  <p><strong>Email:</strong> {contact.email}</p>
-                  <p><strong>Phone:</strong> {contact.phone}</p>
+                  <p><strong>Name:</strong> { contact.name }</p>
+                  <p><strong>Email:</strong> { contact.email }</p>
+                  <p><strong>Phone:</strong> { contact.phone }</p>
                 </div>
               </CardContent>
             </Card>
-
-           
 
             <Card>
               <CardHeader>
@@ -59,6 +55,9 @@ export default async function ContactDetails({ params }: { params: Promise<{ id:
                 <p>Orders functionality to be implemented</p>
               </CardContent>
             </Card>
+          </div>
+          <div className=''>
+            ACTIVITIES
           </div>
 
           

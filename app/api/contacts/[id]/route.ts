@@ -14,8 +14,8 @@ const supabase = createClient()
     }
 	
   try {
-    const contacts = await ContactModel.getById(id)
-    return Response.json(contacts)
+    const contact = await ContactModel.getById(id)
+    return Response.json(contact)
   } catch (error) {
     return Response.json({ error: 'Error fetching users' }, { status: 500 })
   }

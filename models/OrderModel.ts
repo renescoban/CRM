@@ -1,36 +1,34 @@
 import { createClient } from "@/utils/supabase/server"
 import { Order } from "@/types"
 
-export interface Order22 {
-  id: string
-  contact_id: string
-  total: number
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-  estimated_delivery: string
-  order_note?: string
-  created_at: string
-  updated_at: string
-}
-
 export class OrderModel {
   static async getAll() {
     const supabase = await createClient()
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-    if (error) throw error
-    return data
+    .from('orders')
+    .select(`
+      *,
+      contacts (name),
+      payments (*)
+    `)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
   }
 
   static async getById(id: string) {
     const supabase = await createClient()
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error) throw error
-    return data
+    .from('orders')
+    .select(`
+      *,
+      contacts (name),
+      payments (*)
+    `)
+    .eq('id', id)
+    .single()
+  if (error) throw error
+  return data
   }
 
   static async getByContactId(contactId: string) {

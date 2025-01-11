@@ -13,7 +13,7 @@ export default function OrdersSummary({ orders }: OrdersSummaryProps) {
   const today = new Date()
   const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
   const upcomingPayments = orders
-    .filter(order => order.remainingBalance > 0 && new Date(order.estimatedDelivery) <= oneWeekFromNow)
+    .filter(order => order.remainingBalance > 0 && new Date(order.estimated_delivery) <= oneWeekFromNow)
     .reduce((sum, order) => sum + order.remainingBalance, 0)
 
   return (
