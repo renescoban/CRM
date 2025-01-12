@@ -2,14 +2,13 @@ import Hero from "@/components/hero";
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { contacts } from '../data/contacts'
 import Reminders from '@/components/Reminders'
 
 export default async function Home() {
-  const recentActivities = contacts
-    .flatMap(contact => contact.activities.map(activity => ({ ...activity, contactName: contact.name })))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
+  // const recentActivities = contacts
+  //   .flatMap(contact => contact.activities.map(activity => ({ ...activity, contactName: contact.name })))
+  //   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  //   .slice(0, 5)
   return (
     <>
       {/* <Hero /> */}
@@ -21,7 +20,7 @@ export default async function Home() {
               <CardTitle>Total Contacts</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-bold">{contacts.length}</p>
+              <p className="text-4xl font-bold">contacts length</p>
             </CardContent>
           </Card>
           <Card>
@@ -30,11 +29,11 @@ export default async function Home() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {recentActivities.map((activity) => (
-                  <li key={activity.id} className="text-sm">
-                    <span className="font-semibold capitalize">{activity.type}</span> with {activity.contactName} - {activity.date}
+               
+                  <li  className="text-sm">
+                    <span className="font-semibold capitalize">type</span> with contactName - date
                   </li>
-                ))}
+            
               </ul>
             </CardContent>
           </Card>
@@ -51,7 +50,8 @@ export default async function Home() {
               </Link>
             </CardContent>
           </Card>
-          <Reminders activities={contacts.flatMap(contact => contact.activities)} />
+          reminders
+          {/* <Reminders activities={contacts.flatMap(contact => contact.activities)} /> */}
         </div>
       </main>
     </>

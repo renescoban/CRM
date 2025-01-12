@@ -1,10 +1,8 @@
-import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Contact, Activity, CustomField, Order } from '@/types'
 import { ContactModel } from '@/models/ContactModel'
-import { Badge } from "@/components/ui/badge"
 import ActivityList from '@/components/ActivityList'
 import { ActivityModel } from '@/models/ActivityModel'
 import { OrderModel } from '@/models/OrderModel'
