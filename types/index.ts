@@ -64,6 +64,8 @@ export interface Order {
     name: string;
   };
   payments?: Payment[];
+  remainingBalance: number;
+  estimated_delivery: number;
 }
 
 export interface Payment {
