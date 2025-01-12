@@ -42,7 +42,6 @@ export default function Contacts() {
 
   return (
     <div className="">
-    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
             <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Contacts</h1>
@@ -59,6 +58,8 @@ export default function Contacts() {
             className="max-w-md"
           />
         </div>
+        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredContacts.map((contact) => (
             <Link key={contact.id} href={`/contacts/${contact.id}`}>
@@ -66,8 +67,8 @@ export default function Contacts() {
             </Link>
           ))}
         </div>
-      </main>
 }
+      </main>
     </div>
   )
 }

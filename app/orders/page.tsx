@@ -12,6 +12,8 @@ async function getOrders(): Promise<Order[]> {
 
 export default async function Orders() {
   const orders = await getOrders()
+  console.log(orders, );
+
 
   const totalOrders = orders.length
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)

@@ -16,6 +16,7 @@ export interface Activity {
   type: 'call' | 'email' | 'meeting' | 'note' | 'task';
   description: string;
   date: string;
+  dueDate?: string;
   created_at: string;
   updated_at: string;
 }

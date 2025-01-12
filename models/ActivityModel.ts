@@ -1,15 +1,5 @@
 import { createClient } from "@/utils/supabase/server"
 import { Activity } from "@/types"
-export interface Activity222 {
-  id: string
-  contact_id: string
-  type: 'call' | 'email' | 'meeting' | 'note' | 'task'
-  description: string
-  date: string
-  due_date?: string
-  created_at: string
-  updated_at: string
-}
 
 export class ActivityModel {
   static async getAll() {

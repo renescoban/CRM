@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge"
 
 interface OrderListProps {
   orders: Order[]
-}
+} 
 
 export default function OrderList({ orders }: OrderListProps) {
   return (
     <div className="space-y-4">
       {orders.map((order) => {
+
+        console.log(order);
         const totalPaid = order.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0
         const remainingBalance = order.total - totalPaid
 

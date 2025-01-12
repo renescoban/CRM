@@ -35,7 +35,7 @@ export class OrderModel {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('orders')
-      .select('*')
+      .select('*,payments (*)')
       .eq('contact_id', contactId)
     if (error) throw error
     return data

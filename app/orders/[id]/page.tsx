@@ -57,10 +57,9 @@ export default function OrderDetails() {
     <div className="min-h-screen ">
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Order #{order.id}</h1>
-          <Link href={`/orders/${order.id}/add-payment`}>
-            <Button>Add Payment</Button>
-          </Link>
+          <h1 className="text-3xl font-bold block">Order #{order.id}</h1>
+
+          <Button>Edit Order</Button>
         </div>
 
         <Card className="mb-6">
@@ -112,6 +111,9 @@ export default function OrderDetails() {
           </CardContent>
         </Card>
 
+        <Link className='block justify-self-end mb-3' href={`/orders/${order.id}/add-payment`}>
+            <Button>Add Payment</Button>
+          </Link>
         <Card>
           <CardHeader>
             <CardTitle>Payment History</CardTitle>
@@ -145,6 +147,9 @@ export default function OrderDetails() {
             )}
           </CardContent>
         </Card>
+
+        <Button variant="destructive" className='mt-8'>Delete Order</Button>
+
       </main>
     </div>
   )

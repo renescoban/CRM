@@ -2,22 +2,33 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Contact, Activity, CustomField } from '@/types'
+import { Contact, Activity, CustomField, Order } from '@/types'
 import { ContactModel } from '@/models/ContactModel'
 import { Badge } from "@/components/ui/badge"
 import ActivityList from '@/components/ActivityList'
+import { ActivityModel } from '@/models/ActivityModel'
+import { OrderModel } from '@/models/OrderModel'
+import OrderList from '@/components/OrderList'
 
 
-async function getContactData(id: string): Promise<{
-  contact: Contact;
-}> {
+async function getContactData(id: string){
   const contact = await ContactModel.getById(id)
   return contact 
+}
+async function getActivityData(id: string){
+  const activities = await ActivityModel.getByContactId(id)
+  return activities 
+}
+async function getOrderData(id: string){
+  const orders = await OrderModel.getByContactId(id)
+  return orders 
 }
 
 export default async function ContactDetails({ params }: { params: Promise<{ id: string }> }) {
   const{ id }= await params
-  const  contact  = await getContactData(id)
+  const  contact: Contact  = await getContactData(id)
+  const  activities: Activity[]  = await getActivityData(id)
+  const  orders: Order[]  = await getOrderData(id)
 
   return (
     <div className="min-h-screen ">
@@ -52,12 +63,16 @@ export default async function ContactDetails({ params }: { params: Promise<{ id:
                 <CardTitle>Orders</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Orders functionality to be implemented</p>
+              {orders.length > 0 ? (
+                  <OrderList orders={orders} />
+                ) : (
+                  <p>No orders available for this contact.</p>
+                )}
               </CardContent>
             </Card>
           </div>
           <div className=''>
-            ACTIVITIES
+            <ActivityList activities = {activities} />
           </div>
 
           
