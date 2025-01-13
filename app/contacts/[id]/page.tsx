@@ -44,13 +44,13 @@ export default async function ContactDetails({ params }: { params: Promise<{ id:
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Contact Details</h1>
           <div>
-          <ContactInfo contact={contact}  tags={tags}/>
+          
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-          
+          <ContactInfo contact={contact}  tags={tags}/>
             <Card>
               <CardHeader>
                 <CardTitle>Orders</CardTitle>

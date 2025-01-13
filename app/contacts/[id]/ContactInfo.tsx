@@ -96,9 +96,9 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
     <Card>
       <CardHeader className='flex justify-between items-center'>
         <CardTitle>Contact Information</CardTitle>
-        <Link href={`/contacts/${contact.id}/edit`}>
-          <Button className="mr-2" onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
-        </Link>
+        
+        <Button className="mr-2" onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+        
       </CardHeader>
       <CardContent>
         {isEditing ? (
