@@ -53,6 +53,7 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
           phone,
         }),
       })
+      console.log(res)
       setIsEditing(false)
       toast({
         title: "Contact updated",
@@ -78,6 +79,7 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
           name:newTag,
         }),
       })
+      console.log(res)
       toast({
         title: "Contact updated",
         description: "The contact tag information has been successfully updated.",
@@ -94,10 +96,12 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
 
   return (
     <Card>
-      <CardHeader className='flex justify-between items-center'>
+      <CardHeader>
+        <div  className='flex justify-between items-center'>
         <CardTitle>Contact Information</CardTitle>
-        
         <Button className="mr-2" onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+        </div>
+       
         
       </CardHeader>
       <CardContent>
