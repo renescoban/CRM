@@ -1,14 +1,16 @@
 - [ ] Main Page Recent Activities + Reminders
 - [ ] 
 - [ ] 
-- [ ] Add, Edit, Delete ACTIVITY
-- [ ] Edit -tags+fields-, Delete CONTACT
-- [ ] Edit, Delete ORDER
-- [ ] Edit, Delete PAYMENT
+- [ ] Add, Edit,  ACTIVITY
+- [ ] Edit -tags+fields-,  CONTACT
+- [ ] Edit,  ORDER
+- [ ] Edit,  PAYMENT
 - [ ] 
 - [ ] Raporlama
 - [ ]  
 - [ ]  
+- [ ]  Delete Acivity, contact, order, payment
+- [ ] 
 - [ ] 
 - [ ]  
 - [ ] update and delete functionality for payments

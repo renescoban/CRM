@@ -1,22 +1,18 @@
 import { createClient } from "@/utils/supabase/server"
-import { Contact } from "@/types"
 
-export interface Contact22 {
+ interface Tag {
   id: string
   name: string
-  email: string
-  phone: string
   created_at: string
   updated_at: string
 }
 
-export class ContactModel {
-  
+export class TagModel {
   static async getAll() {
     const supabase = await createClient()
 
     const { data, error } = await supabase
-      .from('contacts')
+      .from('tags')
       .select('*')
     if (error) throw error
     return data
@@ -24,30 +20,34 @@ export class ContactModel {
 
   static async getById(id: string) {
     const supabase = await createClient()
+
     const { data, error } = await supabase
-      .from('contacts')
-      .select('        *')
+      .from('tags')
+      .select('*')
       .eq('id', id)
       .single()
     if (error) throw error
     return data
   }
 
-  static async create(contact: Omit<Contact, 'id' | 'created_at' | 'updated_at'>) {
+  static async create(tag: Omit<Tag, 'id' | 'created_at' | 'updated_at'> ) {
     const supabase = await createClient()
+
     const { data, error } = await supabase
-      .from('contacts')
-      .insert(contact)
+      .from('tags')
+      .insert(tag)
       .select()
     if (error) throw error
-    return data[0]
+
+    return data
   }
 
-  static async update(id: string, contact: Partial<Contact>) {
+  static async update(id: string, tag: Partial<Tag>) {
     const supabase = await createClient()
+
     const { data, error } = await supabase
-      .from('contacts')
-      .update(contact)
+      .from('tags')
+      .update(tag)
       .eq('id', id)
       .select()
     if (error) throw error
@@ -56,14 +56,23 @@ export class ContactModel {
 
   static async delete(id: string) {
     const supabase = await createClient()
+
     const { error } = await supabase
-      .from('contacts')
+      .from('tags')
       .delete()
       .eq('id', id)
     if (error) throw error
   }
 
+  static async getByContactId(contactId: string) {
+    const supabase = await createClient()
 
-
+    const { data, error } = await supabase
+      .from('contact_tags')
+      .select('tags (*)')
+      .eq('contact_id', contactId)
+    if (error) throw error
+    return data.map(item => item.tags) as unknown as Tag[]
+  }
 }
 
