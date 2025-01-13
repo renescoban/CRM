@@ -53,7 +53,13 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
           phone,
         }),
       })
-      console.log(res)
+    
+      if (!res.ok) {
+        // Handle API errors here (e.g., status code errors)
+        const error = await res.text();
+        console.error("Update contact API error:", error);
+        throw new Error(error);
+      }
       setIsEditing(false)
       toast({
         title: "Contact updated",
