@@ -50,7 +50,7 @@ export class ContactModel {
       .update(contact)
       .eq('id', id)
       .select()
-      console.error("Supabase update error:", error);
+      
     if (error) throw error
     return data[0]
   }

@@ -85,7 +85,12 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
           name:newTag,
         }),
       })
-      console.log(res)
+      if (!res.ok) {
+        // Handle API errors here (e.g., status code errors)
+        const error = await res.text();
+        console.error("Update contact API error:", error);
+        throw new Error(error);
+      }
       toast({
         title: "Contact updated",
         description: "The contact tag information has been successfully updated.",

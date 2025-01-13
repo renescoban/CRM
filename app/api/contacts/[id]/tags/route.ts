@@ -7,7 +7,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const  id  = (await params).id 
 
     try {
-        const { tagName } = await request.json()
+      const { tagName } = await request.json()
         // First, check if the tag exists, if not create it
       let tag = await TagModel.getAll().then(tags => tags.find(t => t.name === tagName))
       if (!tag) {
