@@ -12,11 +12,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const supabase = createClient()
-    const { data: { user } } = await (await supabase).auth.getUser()
-    
-    if (!user) {
-        return Response.json({ error: 'Unauthorized' },{status:500})
-    }
+
   try {
     const contactData = await request.json()
     const newContact = await ActivityModel.create(contactData)

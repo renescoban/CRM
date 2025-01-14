@@ -23,14 +23,17 @@ interface Tag {
   updated_at: string
 }
 interface ContactInfoProps {
-  contact:Contact
+  contact: Contact| null
   tags: Tag[];
+  onContactChange: () => void
+  onTagsChange: () => void
 }
 
-export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
-  const [name, setName] = useState(contact.name)
-  const [email, setEmail] = useState(contact.email)
-  const [phone, setPhone] = useState(contact.phone)
+export default function ContactInfo( { contact, tags,onContactChange, onTagsChange }:  ContactInfoProps  ){
+
+  const [name, setName] = useState(contact?.name )
+  const [email, setEmail] = useState(contact?.email)
+  const [phone, setPhone] = useState(contact?.phone)
   const [isEditing, setIsEditing] = useState(false)
   const [newCustomFieldName, setNewCustomFieldName] = useState("")
   const [newCustomFieldValue, setNewCustomFieldValue] = useState("")
@@ -42,7 +45,7 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/contacts/${contact.id}`, {
+      const res = await fetch(`/api/contacts/${contact?.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -60,6 +63,7 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
         console.error("Update contact API error:", error);
         throw new Error(error);
       }
+      onContactChange()
       setIsEditing(false)
       toast({
         title: "Contact updated",
@@ -76,14 +80,14 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
   const handleAddTag = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/contacts/${contact.id}/tags`, {
+      const res = await fetch(`/api/contacts/${contact?.id}/tags`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name:newTag,
-        }),
+        body: JSON.stringify(
+          newTag,
+        ),
       })
       if (!res.ok) {
         // Handle API errors here (e.g., status code errors)
@@ -91,6 +95,8 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
         console.error("Update contact API error:", error);
         throw new Error(error);
       }
+      onTagsChange()
+      setNewTag("")
       toast({
         title: "Contact updated",
         description: "The contact tag information has been successfully updated.",
@@ -99,6 +105,35 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
       toast({
         title: "Error",
         description: "There was an error updating the tags. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+  const handleDeldeteTag = async (tagId:string) => {
+    try {
+      const res = await fetch(`/api/contacts/${contact?.id}/tags`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify( tagId ),
+      })
+      if (!res.ok) {
+        // Handle API errors here (e.g., status code errors)
+        const error = await res.text();
+        console.error("Update contact API error:", error);
+        throw new Error(error);
+      }
+      onTagsChange()
+
+      toast({
+        title: "Tag deleted",
+        description: "The contact tag information has been successfully updated.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was an error deleting the tag. Please try again.",
         variant: "destructive",
       })
     }
@@ -112,8 +147,6 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
         <CardTitle>Contact Information</CardTitle>
         <Button className="mr-2" onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
         </div>
-       
-        
       </CardHeader>
       <CardContent>
         {isEditing ? (
@@ -202,7 +235,7 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
                       {tags.map(tag => (
                         <Badge key={tag.id} variant="secondary" className="text-sm">
                           {tag.name}
-                          <button className="ml-2 text-xs">&times;</button>
+                          <button className="ml-2 text-xs" onClick={()=>handleDeldeteTag(tag.id)}>&times;</button>
                         </Badge>
                       ))}
                     </div>
@@ -223,9 +256,9 @@ export default function ContactInfo({ contact, tags }:  ContactInfoProps  ){
           </div>
         ) : (
           <div className="space-y-2">
-            <p><strong>Name:</strong> {name}</p>
-            <p><strong>Email:</strong> {email}</p>
-            <p><strong>Phone:</strong> {phone}</p>
+            <p><strong>Name:</strong> {contact?.name}</p>
+            <p><strong>Email:</strong> { contact?.email}</p>
+            <p><strong>Phone:</strong> {contact?.phone}</p>
           </div>
         )
         }

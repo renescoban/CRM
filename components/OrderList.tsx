@@ -11,8 +11,6 @@ export default function OrderList({ orders }: OrderListProps) {
   return (
     <div className="space-y-4">
       {orders.map((order) => {
-
-        console.log(order);
         const totalPaid = order.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0
         const remainingBalance = order.total - totalPaid
 
@@ -28,7 +26,7 @@ export default function OrderList({ orders }: OrderListProps) {
                     <p className="text-sm text-gray-600">Total: ${order.total.toFixed(2)}</p>
                     <p className="text-sm text-gray-600">Paid: ${totalPaid.toFixed(2)}</p>
                     <p className="text-sm text-gray-600">Remaining: ${remainingBalance.toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">Customer: {order.contact?.name}</p>
+                    <p className="text-sm text-gray-600">Customer: {order.contacts?.name}</p>
                     <p className="text-sm text-gray-600">Created: {new Date(order.created_at).toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">

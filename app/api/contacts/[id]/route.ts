@@ -5,13 +5,6 @@ type Params = Promise<{ id: string }>;
 
 export async function GET(req: Request,{ params }: { params:Params }) {
   const  {id}  = await params
-
-const supabase = createClient()
-    const { data: { user } } = await (await supabase).auth.getUser()
-    
-    if (!user) {
-        return Response.json({ error: 'Unauthorized' },{status:500})
-    }
 	
   try {
     const contact = await ContactModel.getById(id)
@@ -24,14 +17,7 @@ const supabase = createClient()
 export async function PUT(  request: Request,  { params }: { params:Params}) {
   const  {id}  = await params
 
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await (await supabase).auth.getUser();
 
-  if (!user) {
-    return Response.json({ error: "Unauthorized" }, { status: 500 });
-  }
   try {
     const contactData = await request.json()
     const newContact = await ContactModel.update(id, contactData)

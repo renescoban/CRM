@@ -1,4 +1,4 @@
-import Link from 'next/link'
+"use client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Contact, Activity, CustomField, Order, Tag } from '@/types'
@@ -9,8 +9,11 @@ import { OrderModel } from '@/models/OrderModel'
 import { TagModel } from '@/models/TagsModel'
 import OrderList from '@/components/OrderList'
 import ContactInfo from './ContactInfo'
+import { useParams } from 'next/navigation'
 
+import { useEffect, useState } from 'react'
 
+/*
 async function getContactData(id: string){
   const contact = await ContactModel.getById(id)
   return contact 
@@ -28,16 +31,91 @@ async function getTagsData(id: string){
   return tags 
 }
 async function getCustomfieldsData(id: string){
-
+   
 }
+*/
+export default  function ContactDetails() {
 
-export default async function ContactDetails({ params }: { params: Promise<{ id: string }> }) {
-  const { id }= await params
-  const  contact: Contact  = await getContactData(id)
-  const  activities: Activity[]  = await getActivityData(id)
-  const  orders: Order[]  = await getOrderData(id)
-  const  tags:Tag[]  = await getTagsData(id)
+   const { id } = useParams<{ id: string; }>()
+  const [contact, setContact] = useState<Contact | null>(null)
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+  const [newTag, setNewTag] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
+  const updateActivity = async ()=>{
+    const activitiesRes = await fetch(`/api/contacts/${id}/activities`)
+    if(!activitiesRes.ok){
+      const error = await activitiesRes.text();
+      console.error("error updating activities: ", error)
+      throw new Error(error);
+    }
+    setActivities(await activitiesRes.json() )
+  }
+  const updateTag = async ()=>{
+    const tagsRes = await fetch(`/api/contacts/${id}/tags`)
+    if(!tagsRes.ok){
+      const error = await tagsRes.text();
+      console.error("error updating tags: ", error)
+      throw new Error(error);
+    }
+    setTags(await tagsRes.json() )
+  }
+  const updateContact = async ()=>{
+    const contactRes = await fetch(`/api/contacts/${id}`)
+    if(!contactRes.ok){
+      const error = await contactRes.text();
+      console.error("error updating activities: ", error)
+      throw new Error(error);
+    }
+    setContact(await contactRes.json() )
+  }
+  
+  const fetchContactData = async () => {
+    try {
+      const [contactRes, activitiesRes, ordersRes, tagsRes] = await Promise.all([
+        fetch(`/api/contacts/${id}`),
+        fetch(`/api/contacts/${id}/activities`),
+        fetch(`/api/contacts/${id}/orders`),
+        fetch(`/api/contacts/${id}/tags`)
+      ])
+
+      if (!contactRes.ok || !activitiesRes.ok || !ordersRes.ok || !tagsRes.ok) {
+        throw new Error('Failed to fetch data')
+      }
+
+      const [contactData, activitiesData, ordersData, tagsData] = await Promise.all([
+        contactRes.json(),
+        activitiesRes.json(),
+        ordersRes.json(),
+        tagsRes.json()
+      ])
+
+      setContact(contactData)
+      setActivities(activitiesData)
+      setOrders(ordersData)
+      setTags(tagsData)
+    } catch (error) {
+      console.error('Error fetching contact data:', error)
+
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchContactData()
+  }, [id])
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!contact) {
+    return <div>Contact not found</div>
+  }
+  
   return (
     <div className="min-h-screen ">
       <main className="container mx-auto px-4 py-8">
@@ -50,7 +128,7 @@ export default async function ContactDetails({ params }: { params: Promise<{ id:
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-          <ContactInfo contact={contact}  tags={tags}/>
+          <ContactInfo contact={contact} tags={tags} onContactChange={updateContact} onTagsChange={updateTag}/>
             <Card>
               <CardHeader>
                 <CardTitle>Orders</CardTitle>
@@ -65,7 +143,7 @@ export default async function ContactDetails({ params }: { params: Promise<{ id:
             </Card>
           </div>
           <div className=''>
-            <ActivityList activities = {activities} />
+            <ActivityList contactId={id} activities = {activities} onActivityChange={updateActivity}/>
           </div>
 
           

@@ -1,17 +1,17 @@
-- [ ] Main Page Recent Activities + Reminders
-- [ ] 
-- [ ] 
-- [ ] Add, Edit,  ACTIVITY
-- [ ] Edit -tags+fields-,  CONTACT
-- [ ] Edit,  ORDER
-- [ ] Edit,  PAYMENT
-- [ ] 
+- [ ] Dashborad - Recent Activities + Reminders
+
+- [*] ACTIVITY  
+- [ ] CONTACT - better edit + custom fields
+- [ ] ORDER - 
+- [ ] PAYMENT - form as Dialog
 - [ ] Raporlama
-- [ ]  
-- [ ]  
-- [ ]  Delete Acivity, contact, order, payment
-- [ ] 
-- [ ] 
-- [ ]  
+
+
+
+
+
+
+
+- [ ] auth for API
 - [ ] update and delete functionality for payments
 - [ ] validation to the add payment page.

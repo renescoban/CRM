@@ -6,7 +6,7 @@ export class ActivityModel {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('activities')
-      .select('*')
+      .select('*, contacts(name)')
     if (error) throw error
     return data
   }

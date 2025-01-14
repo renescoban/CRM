@@ -12,160 +12,197 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Order, Payment } from '@/types'
+import { TrashIcon } from 'lucide-react'
+
+interface EditedOrder {
+  status: string;
+  note?: string;
+  // Diğer özellikler...
+}
 
 export default function OrderDetails() {
+  const { id } = useParams<{ id: string; }>()
+  const route = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  
+
   const [order, setOrder] = useState<Order | null>(null)
-  const [editedOrder, setEditedOrder] = useState<Partial<Order>>({})
+  const [editedOrder, setEditedOrder] = useState<Partial<EditedOrder>>({})
   const [payments, setPayments] = useState<Payment[]>([])
-  const [newPayment, setNewPayment] = useState<Omit<Payment, 'id' | 'order_id' | 'created_at' | 'updated_at'>>({
+  const [newPayment, setNewPayment] = useState<Omit<Payment, 'id' | 'created_at' | 'updated_at'>>({
     amount: 0,
     method: 'credit_card',
     status: 'completed',
+    order_id: id
   })
 
-  const router = useRouter()
-  const  {id}  = useParams<{ id: string; }>()
-  
+
   const { toast } = useToast()
 
   useEffect(() => {
-  const fetchOrderAndPayments = async () => {
-    try {
-      const orderRes = await 
-        fetch(`/api/orders/${id}`)
-        
+    const fetchOrderAndPayments = async () => {
+      try {
+        const orderRes = await
+          fetch(`/api/orders/${id}`, {cache:"force-cache"})
 
-      
-      if (!orderRes.ok ) {
-        throw new Error('Failed to fetch order or payments')
+        if (!orderRes.ok) {
+          throw new Error('Failed to fetch order or payments')
+        }
+
+        const orderData = await orderRes.json()
+
+        setOrder(orderData)
+        setEditedOrder({ status: orderData.status, note: orderData.note })
+        setPayments(orderData.payments )
+      } catch (error) {
+        console.error('Error fetching order and payments:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load order details and payments. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
       }
-      
-      const orderData = await  orderRes.json()
-      
-      setOrder(orderData)
-      setEditedOrder(orderData)
-      setPayments(orderData.payments)
+    }
+
+    fetchOrderAndPayments()
+  }, [id])
+
+  const handleEditOrder = async () => {
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedOrder),
+      })
+
+      if (!res.ok) {
+        // Handle API errors here (e.g., status code errors)
+        const error = await res.text();
+        console.error("Update contact API error:", error);
+        throw new Error(error);
+      }
+
+      const updatedOrder = await res.json()
+      setOrder(updatedOrder)
+      setIsEditing(false)
+      toast({
+        title: "Order updated",
+        description: "The order has been successfully updated.",
+      })
     } catch (error) {
-      console.error('Error fetching order and payments:', error)
+      console.error('Error updating order:', error)
       toast({
         title: "Error",
-        description: "Failed to load order details and payments. Please try again.",
+        description: "Failed to update the order. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  fetchOrderAndPayments()
-}, [id])
+  const handleAddPayment = async () => {
+    try {
+      console.log(newPayment)
+      const res = await fetch(`/api/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPayment),
+      })
 
-const handleEditOrder = async () => {
-  try {
-    const res = await fetch(`/api/orders/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(editedOrder),
-    })
+      if (!res.ok) {
+        throw new Error('Failed to add payment')
+      }
 
-    if (!res.ok) {
-      throw new Error('Failed to update order')
+      const addedPayment = await res.json()
+      setPayments([...payments, addedPayment])
+      setNewPayment({
+        amount: 0,
+        method: 'credit_card',
+        status: 'completed',
+        order_id: id
+      })
+      toast({
+        title: "Payment added",
+        description: "The payment has been successfully added to the order.",
+      })
+    } catch (error) {
+      console.error('Error adding payment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add the payment. Please try again.",
+        variant: "destructive",
+      })
     }
-
-    const updatedOrder = await res.json()
-    setOrder(updatedOrder)
-    setIsEditing(false)
-    toast({
-      title: "Order updated",
-      description: "The order has been successfully updated.",
-    })
-  } catch (error) {
-    console.error('Error updating order:', error)
-    toast({
-      title: "Error",
-      description: "Failed to update the order. Please try again.",
-      variant: "destructive",
-    })
   }
-}
 
-const handleAddPayment = async () => {
-  try {
-    console.log(newPayment)
-     const res = await fetch(`/api/payments`, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify(newPayment),
-    })
+  const handleDeletePayment = async (paymentId: string) => {
+    try {
+      const res = await fetch(`/api/payments`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify( paymentId ),
+      })
 
-    if (!res.ok) {
-      throw new Error('Failed to add payment')
+      if (!res.ok) {
+        throw new Error('Failed to delete payment')
+      }
+
+      setPayments(payments.filter(payment => payment.id !== paymentId))
+      toast({
+        title: "Payment deleted",
+        description: "The payment has been successfully deleted from the order.",
+      })
+    } catch (error) {
+      console.error('Error deleting payment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete the payment. Please try again.",
+        variant: "destructive",
+      })
     }
-
-    const addedPayment = await res.json()
-    setPayments([...payments, addedPayment])
-    setNewPayment({
-      amount: 0,
-      method: 'credit_card',
-      status: 'completed',
-    })
-    toast({
-      title: "Payment added",
-      description: "The payment has been successfully added to the order.",
-    })
-  } catch (error) {
-    console.error('Error adding payment:', error)
-    toast({
-      title: "Error",
-      description: "Failed to add the payment. Please try again.",
-      variant: "destructive",
-    })
   }
-}
+  
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify( orderId ),
+      })
 
-const handleDeletePayment = async (paymentId: string) => {
-  try {
-    const res = await fetch(`/api/orders/${id}/payments`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ paymentId }),
-    })
+      if (!res.ok) {
+        throw new Error('Failed to delete payment')
+      }
+      if (res.ok) {
+        route.push('/orders')
+      }
 
-    if (!res.ok) {
-      throw new Error('Failed to delete payment')
+    } catch (error) {
+      console.error('Error deleting payment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete the order. Please try again.",
+        variant: "destructive",
+      })
     }
-
-    setPayments(payments.filter(payment => payment.id !== paymentId))
-    toast({
-      title: "Payment deleted",
-      description: "The payment has been successfully deleted from the order.",
-    })
-  } catch (error) {
-    console.error('Error deleting payment:', error)
-    toast({
-      title: "Error",
-      description: "Failed to delete the payment. Please try again.",
-      variant: "destructive",
-    })
   }
-}
 
-if (isLoading) {
-  return <div>Loading...</div>
-}
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
-if (!order) {
-  return <div>Order not found</div>
-}
+  if (!order) {
+    return <div>Order not found</div>
+  }
 
   const totalPaid = order.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0
   const remainingBalance = order.total - totalPaid
@@ -179,14 +216,14 @@ if (!order) {
             <Button onClick={() => setIsEditing(true)}>Edit Order</Button>
           )}
         </div>
-        
+
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Order Details</CardTitle>
           </CardHeader>
           <CardContent>
-          {isEditing ? (
-            <form onSubmit={(e) => { e.preventDefault(); handleEditOrder(); }} className="space-y-4">
+            {isEditing ? (
+              <form onSubmit={(e) => { e.preventDefault(); handleEditOrder(); }} className="space-y-4">
                 <div>
                   <Label htmlFor="status">Status</Label>
                   <Select
@@ -219,10 +256,10 @@ if (!order) {
                   <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
                 </div>
               </form>
-            ): (
-            <div className="grid grid-cols-2 gap-4">
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p><strong>Customer:</strong> {order.contact?.name}</p>
+                  <p><strong>Customer:</strong> {order.contacts?.name}</p>
                   <p><strong>Total:</strong> ${order.total.toFixed(2)}</p>
                   <p><strong>Paid:</strong> ${totalPaid.toFixed(2)}</p>
                   <p><strong>Remaining Balance:</strong> ${remainingBalance.toFixed(2)}</p>
@@ -233,7 +270,7 @@ if (!order) {
                   <p><strong>Updated At:</strong> {new Date(order.updated_at).toLocaleString()}</p>
                   {order.note && <p><strong>Note:</strong> {order.note}</p>}
                 </div>
-              </div>) 
+              </div>)
             }
           </CardContent>
         </Card>
@@ -266,16 +303,15 @@ if (!order) {
           </CardContent>
         </Card>
 
-        <Link className='block justify-self-end mb-3' href={`/orders/${order.id}/add-payment`}>
-            <Button>Add Payment</Button>
-          </Link>
         <Card>
           <CardHeader>
-            <CardTitle>Payment History</CardTitle>
+            <CardTitle>
+                <CardTitle>Payment History</CardTitle>
+              </CardTitle>
           </CardHeader>
           <CardContent>
             {order.payments && order.payments.length > 0 ? (
-              <table className="w-full">
+              <table className="w-full ">
                 <thead>
                   <tr>
                     <th className="text-left">Date</th>
@@ -285,16 +321,19 @@ if (!order) {
                     <th className="text-left">Status</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className='space-y-12'>
                   {order.payments.map((payment) => (
+                  <>
                     <tr key={payment.id}>
                       <td>{new Date(payment.created_at).toLocaleString()}</td>
                       <td>${payment.amount.toFixed(2)}</td>
                       <td>{payment.method}</td>
                       <td>{payment.note}</td>
                       <td><Badge variant={payment.status === 'completed' ? 'default' : 'secondary'}>{payment.status}</Badge></td>
+                      <Button variant={'destructive'} size={'icon'} className="mr-2" onClick={() => handleDeletePayment(payment.id)}><TrashIcon /></Button>
                     </tr>
-                  ))}
+                    </>
+                    ))}
                 </tbody>
               </table>
             ) : (
@@ -304,63 +343,66 @@ if (!order) {
 
           </CardContent>
         </Card>
-<form onSubmit={(e) => { e.preventDefault(); handleAddPayment(); }} className="space-y-4">
-              <div>
-                <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={newPayment.amount}
-                  onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="method">Payment Method</Label>
-                <Select
-                  value={newPayment.method}
-                  onValueChange={(value) => setNewPayment({ ...newPayment, method: value as Payment['method'] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="credit_card">Credit Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="status">Payment Status</Label>
-                <Select
-                  value={newPayment.status}
-                  onValueChange={(value) => setNewPayment({ ...newPayment, status: value as Payment['status'] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
+
+        <hr className='mt-6' />
+        <form onSubmit={(e) => { e.preventDefault(); handleAddPayment(); }} className="space-y-4">
+          <div>
+            <Label htmlFor="amount">Amount</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              value={newPayment.amount}
+              onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="method">Payment Method</Label>
+            <Select
+              value={newPayment.method}
+              onValueChange={(value) => setNewPayment({ ...newPayment, method: value as Payment['method'] })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select payment method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="credit_card">Credit Card</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="status">Payment Status</Label>
+            <Select
+              value={newPayment.status}
+              onValueChange={(value) => setNewPayment({ ...newPayment, status: value as Payment['status'] })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select payment status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
             <Label htmlFor="orderNote">Payment Note</Label>
             <Textarea
               id="orderNote"
               value={newPayment.note}
               onChange={(event) => setNewPayment({ ...newPayment, note: event.target.value })}
-                
+
               placeholder="Add any additional notes here"
             />
           </div>
-              <Button type="submit">Add Payment</Button>
-            </form>
+          <Button type="submit">Add Payment</Button>
+        </form>
+
         <Button variant="destructive" className='mt-8'>Delete Order</Button>
 
       </main>

@@ -60,7 +60,7 @@ export interface Order {
   note?: string;
   created_at: string;
   updated_at: string;
-  contact?: {
+  contacts?: {
     name: string;
   };
   payments?: Payment[];
