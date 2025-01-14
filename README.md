@@ -1,17 +1,9 @@
-- [ ] Dashborad - Recent Activities + Reminders
 
-- [*] ACTIVITY  
-- [ ] CONTACT - better edit + custom fields
-- [ ] ORDER - 
+- [ ] CONTACT - better add/edit fields + custom fields
+- [ ] ORDER - Delete order
 - [ ] PAYMENT - form as Dialog
-- [ ] Raporlama
+- [ ] REPORTS
 
 
+- [ ] validation for API usages
 
-
-
-
-
-- [ ] auth for API
-- [ ] update and delete functionality for payments
-- [ ] validation to the add payment page.

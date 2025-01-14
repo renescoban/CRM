@@ -11,6 +11,7 @@ export interface Contact {
 }
 
 export interface Activity {
+  [x: string]: any;
   id: string;
   contact_id: string;
   type: 'call' | 'email' | 'meeting' | 'note' | 'task';
