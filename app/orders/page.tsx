@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import OrderList from '@/components/OrderList'
+import OrderTable from '@/components/OrderTable'
 import { Order } from '@/types'
 import { OrderModel } from '@/models/OrderModel'
 
@@ -12,8 +13,6 @@ async function getOrders(): Promise<Order[]> {
 
 export default async function Orders() {
   const orders = await getOrders()
-  console.log(orders, );
-
 
   const totalOrders = orders.length
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
@@ -68,7 +67,9 @@ export default async function Orders() {
           </Card>
         </div>
 
-        <OrderList orders={orders} />
+        {/* <OrderList orders={orders} /> */}
+        <OrderTable orders={orders} />
+
       </main>
     </div>
   )

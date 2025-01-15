@@ -6,8 +6,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 
   try {
-    const contacts = await ActivityModel.getById(id)
-    return Response.json(contacts)
+    const activity = await ActivityModel.getById(id)
+    return Response.json(activity)
   } catch (error) {
     return Response.json({ error: 'Error fetching activity' }, { status: 500 })
   }

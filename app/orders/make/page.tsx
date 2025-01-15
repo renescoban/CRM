@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from '@/hooks/use-toast'
 import { Contact, Order } from '@/types'
+import StarRating from '@/components/StarRating'
 
 export default function MakeOrder() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function MakeOrder() {
   const [estimatedDelivery, setEstimatedDelivery] = useState('')
   const [orderNote, setOrderNote] = useState('')
   const [contacts, setContacts] = useState<Contact[]>([])
+  const [importance, setImportance] = useState(0)
   useEffect(() => {
     fetch('/api/contacts')
       .then(res => res.json())
@@ -43,8 +45,8 @@ export default function MakeOrder() {
         status,
         estimated_delivery: estimatedDelivery,
         note:orderNote,
-        //payments: [],
         remaining_balance: total,
+        importance
       })})
       router.push('/orders')
       toast({
@@ -69,6 +71,7 @@ export default function MakeOrder() {
     updatedProducts[index] = { ...updatedProducts[index], [field]: value }
     setProducts(updatedProducts)
   }
+
 
   return (
     <div className="min-h-screen ">
@@ -152,6 +155,8 @@ export default function MakeOrder() {
               placeholder="Add any additional notes here"
             />
           </div>
+
+          <StarRating maxStars={3} onChange={(value) =>setImportance(value)}/>
 
           <Button type="submit">Create Order</Button>
         </form>

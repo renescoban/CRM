@@ -38,7 +38,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="min-h-screen  items-center">
-            <div className="flex-1 w-full flex flex-col gap-10 items-center">
+            <div className="flex-1 w-full flex flex-col gap-10 items-center ">
               <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
                 <div className="w-full max-w-7xl flex justify-between items-center p-3 px-5 text-sm">
                   <Header />

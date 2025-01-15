@@ -151,11 +151,11 @@ export default function Dashboard() {
               <ul className="space-y-2">
                 {getReminders().map((reminder) => (
                   <li key={reminder.id} className="text-sm">
-                    <span className="font-semibold capitalize">{reminder.type}</span>
-                    -
-                    <span className="text-s ">{reminder.description}</span>
+                    <span className="font-semibold capitalize">{reminder.type}</span> with <Link className='font-semibold text-blue-600 hover:underline' href={`/contacts/${reminder.contact_id}`}>{reminder.contacts.name}</Link> 
                     <br />
-                    <span className="text-xs text-gray-500">Due: {new Date(reminder.date).toLocaleDateString()}</span>
+                    {reminder.description.slice(0, 50)}...
+                    <br />
+                    <span className="text-xs text-gray-500">{new Date(reminder.date).toLocaleDateString()}</span>
                   </li>
                 ))}
               </ul>

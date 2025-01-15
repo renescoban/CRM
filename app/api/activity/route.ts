@@ -3,8 +3,8 @@ import { ActivityModel } from '@/models/ActivityModel'
 
 export async function GET() {
   try {
-    const contacts = await ActivityModel.getAll()
-    return Response.json(contacts)
+    const activities = await ActivityModel.getAll()
+    return Response.json(activities)
   } catch (error) {
     return Response.json({ error: 'Internal Server Error' }, { status: 500 })
   }

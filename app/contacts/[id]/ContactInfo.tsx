@@ -190,14 +190,14 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
                 <TabsTrigger value="tags">Tags</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="custom-fields">
+              {/* <TabsContent value="custom-fields">
                 <Card>
                   <CardHeader>
                     <CardTitle>Custom Fields</CardTitle>
                     <CardDescription>Manage additional information about the contact</CardDescription>
                   </CardHeader>
                   <CardContent>field
-                    {/* {customFields && customFields.map((field) => (
+                    {customFields && customFields.map((field) => (
                       <div key={field.id} className="mb-2">
                         <strong>{field.name}:</strong> {field.value}
                       </div>
@@ -219,10 +219,10 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
                       />
 
                       <Button type="submit">Add Custom Field</Button>
-                    </form> */}
+                    </form> 
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
 
               <TabsContent value="tags">
                 <Card>

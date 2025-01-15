@@ -7,7 +7,6 @@ export interface Contact {
   phone: string;
   created_at: string;
   updated_at: string;
-  
 }
 
 export interface Activity {
@@ -67,6 +66,7 @@ export interface Order {
   payments?: Payment[];
   remainingBalance: number;
   estimated_delivery: number;
+  importance?:number
 }
 
 export interface Payment {

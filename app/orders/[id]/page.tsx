@@ -13,11 +13,21 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Order, Payment } from '@/types'
 import { TrashIcon } from 'lucide-react'
+import StarRating from '@/components/StarRating'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface EditedOrder {
   status: string;
   note?: string;
-  // Diğer özellikler...
+  importance?:number
 }
 
 export default function OrderDetails() {
@@ -25,6 +35,7 @@ export default function OrderDetails() {
   const route = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   const [order, setOrder] = useState<Order | null>(null)
   const [editedOrder, setEditedOrder] = useState<Partial<EditedOrder>>({})
@@ -43,7 +54,7 @@ export default function OrderDetails() {
     const fetchOrderAndPayments = async () => {
       try {
         const orderRes = await
-          fetch(`/api/orders/${id}`, {cache:"force-cache"})
+          fetch(`/api/orders/${id}`,  )
 
         if (!orderRes.ok) {
           throw new Error('Failed to fetch order or payments')
@@ -52,7 +63,7 @@ export default function OrderDetails() {
         const orderData = await orderRes.json()
 
         setOrder(orderData)
-        setEditedOrder({ status: orderData.status, note: orderData.note })
+        setEditedOrder({ status: orderData.status, note: orderData.note, importance: orderData.importance })
         setPayments(orderData.payments )
       } catch (error) {
         console.error('Error fetching order and payments:', error)
@@ -77,6 +88,7 @@ export default function OrderDetails() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(editedOrder),
+        
       })
 
       if (!res.ok) {
@@ -86,8 +98,37 @@ export default function OrderDetails() {
         throw new Error(error);
       }
 
-      const updatedOrder = await res.json()
-      setOrder(updatedOrder)
+      const updatedOrder = (await res.json()) as Partial<Order>;
+      setOrder((prevOrder) => {
+        // If prevOrder is null, initialize a new Order with required fields
+        if (!prevOrder) {
+          return {
+            id: updatedOrder.id || "unknown-id", // Replace with a sensible default
+            contact_id: updatedOrder.contact_id || "unknown-contact",
+            total: updatedOrder.total || 0,
+            status: updatedOrder.status || "pending",
+            products: updatedOrder.products || [],
+            created_at: updatedOrder.created_at || new Date().toISOString(),
+            updated_at: updatedOrder.updated_at || new Date().toISOString(),
+            remainingBalance: updatedOrder.remainingBalance || 0,
+            estimated_delivery: updatedOrder.estimated_delivery || Date.now(),
+            importance: updatedOrder.importance ?? 0,
+            note: updatedOrder.note,
+            contacts: updatedOrder.contacts,
+            payments: updatedOrder.payments,
+          };
+        }
+      
+        // Merge updatedOrder into the existing prevOrder
+        return {
+          ...prevOrder,
+          status: updatedOrder.status || prevOrder.status,
+          note: updatedOrder.note ?? prevOrder.note,
+          importance: updatedOrder.importance ?? prevOrder.importance,
+          id: updatedOrder.id ?? prevOrder.id,
+          contact_id: updatedOrder.contact_id ?? prevOrder.contact_id,
+        };
+      });
       setIsEditing(false)
       toast({
         title: "Order updated",
@@ -105,7 +146,6 @@ export default function OrderDetails() {
 
   const handleAddPayment = async () => {
     try {
-      console.log(newPayment)
       const res = await fetch(`/api/payments`, {
         method: 'POST',
         headers: {
@@ -120,12 +160,14 @@ export default function OrderDetails() {
 
       const addedPayment = await res.json()
       setPayments([...payments, addedPayment])
+      setIsAddDialogOpen(false)
       setNewPayment({
         amount: 0,
         method: 'credit_card',
         status: 'completed',
         order_id: id
       })
+
       toast({
         title: "Payment added",
         description: "The payment has been successfully added to the order.",
@@ -242,6 +284,7 @@ export default function OrderDetails() {
                     </SelectContent>
                   </Select>
                 </div>
+                <StarRating displayMode={!isEditing} maxStars={3} onChange={(value) =>setEditedOrder({ ...editedOrder, importance:value})} />
                 <div>
                   <Label htmlFor="note">Order Note</Label>
                   <Textarea
@@ -257,7 +300,7 @@ export default function OrderDetails() {
                 </div>
               </form>
             ) : (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2  gap-x-4">
                 <div>
                   <p><strong>Customer:</strong> {order.contacts?.name}</p>
                   <p><strong>Total:</strong> ${order.total.toFixed(2)}</p>
@@ -268,8 +311,11 @@ export default function OrderDetails() {
                   <p><strong>Status:</strong> <Badge>{order.status}</Badge></p>
                   <p><strong>Created At:</strong> {new Date(order.created_at).toLocaleString()}</p>
                   <p><strong>Updated At:</strong> {new Date(order.updated_at).toLocaleString()}</p>
-                  {order.note && <p><strong>Note:</strong> {order.note}</p>}
+                  <StarRating displayMode={true} maxStars={order.importance} />
                 </div>
+                <div>
+                  {order.note && <p><strong>Note:</strong> {order.note}</p>}
+                  </div>
               </div>)
             }
           </CardContent>
@@ -302,50 +348,15 @@ export default function OrderDetails() {
             </table>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>
-                <CardTitle>Payment History</CardTitle>
-              </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {order.payments && order.payments.length > 0 ? (
-              <table className="w-full ">
-                <thead>
-                  <tr>
-                    <th className="text-left">Date</th>
-                    <th className="text-left">Amount</th>
-                    <th className="text-left">Method</th>
-                    <th className="text-left">Note</th>
-                    <th className="text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody className='space-y-12'>
-                  {order.payments.map((payment) => (
-                  <>
-                    <tr key={payment.id}>
-                      <td>{new Date(payment.created_at).toLocaleString()}</td>
-                      <td>${payment.amount.toFixed(2)}</td>
-                      <td>{payment.method}</td>
-                      <td>{payment.note}</td>
-                      <td><Badge variant={payment.status === 'completed' ? 'default' : 'secondary'}>{payment.status}</Badge></td>
-                      <Button variant={'destructive'} size={'icon'} className="mr-2" onClick={() => handleDeletePayment(payment.id)}><TrashIcon /></Button>
-                    </tr>
-                    </>
-                    ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No payments recorded for this order.</p>
-            )}
-
-
-          </CardContent>
-        </Card>
-
-        <hr className='mt-6' />
-        <form onSubmit={(e) => { e.preventDefault(); handleAddPayment(); }} className="space-y-4">
+        <hr className='mb-6' />
+        <Dialog  open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogTrigger asChild>
+          <Button className="mb-2">Add Payment</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Activity</DialogTitle>
+            <form onSubmit={(e) => { e.preventDefault(); handleAddPayment(); }} className="space-y-4">
           <div>
             <Label htmlFor="amount">Amount</Label>
             <Input
@@ -353,9 +364,13 @@ export default function OrderDetails() {
               type="number"
               step="0.01"
               value={newPayment.amount}
-              onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) })}
+              onChange={(e) =>{ 
+                setNewPayment({ ...newPayment, amount:Math.min(remainingBalance, Math.max(0, parseFloat(e.target.value) ))  });
+            }}
               required
             />
+            <input id='max' type='checkbox' checked={newPayment.amount == remainingBalance} onChange={()=>setNewPayment({ ...newPayment, amount:remainingBalance })} />
+            <label htmlFor="max">max</label> <span>kalan - {remainingBalance-newPayment.amount}</span>
           </div>
           <div>
             <Label htmlFor="method">Payment Method</Label>
@@ -402,8 +417,57 @@ export default function OrderDetails() {
           </div>
           <Button type="submit">Add Payment</Button>
         </form>
+          </DialogHeader>
+          </DialogContent>
+        </Dialog>
 
-        <Button variant="destructive" className='mt-8'>Delete Order</Button>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+                <CardTitle>Payment History</CardTitle>
+              </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {order.payments && order.payments.length > 0 ? (
+              <table className="w-full ">
+                <thead>
+                  <tr>
+                    <th className="text-left">Date</th>
+                    <th className="text-left">Amount</th>
+                    <th className="text-left">Method</th>
+                    <th className="text-left">Note</th>
+                    <th className="text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody className='space-y-12'>
+                  {order.payments.map((payment) => (
+                  
+                    <tr className='h-9' key={payment.id}>
+                      <td>{new Date(payment.created_at).toLocaleString()}</td>
+                      <td>${payment.amount.toFixed(2)}</td>
+                      <td>{payment.method}</td>
+                      <td>{payment.note}</td>
+                      <td><Badge variant={payment.status === 'completed' ? 'default' : 'secondary'}>{payment.status}</Badge></td>
+                      <td><TrashIcon className="w-8 h-8 p-1  cursor-pointer text-red-500 hover:bg-slate-200 rounded" onClick={() => handleDeletePayment(payment.id)}/></td>
+                    </tr>
+                    
+                    ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No payments recorded for this order.</p>
+            )}
+
+
+          </CardContent>
+        </Card>
+
+
+        
+
+        
+
+        <Button variant="destructive" className='mt-8' onClick={() => handleDeleteOrder(id)}>Delete Order</Button>
 
       </main>
     </div>
