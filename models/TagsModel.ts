@@ -38,7 +38,6 @@ export class TagModel {
       .insert(tag)
       .select()
       .single()
-      console.error("Supabase update error:", error);
     if (error) throw error
 
     return data

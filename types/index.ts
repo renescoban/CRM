@@ -7,6 +7,9 @@ export interface Contact {
   phone: string;
   created_at: string;
   updated_at: string;
+  company?:string;
+  address?: string;
+  website?:string
 }
 
 export interface Activity {

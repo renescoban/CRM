@@ -1,11 +1,14 @@
+##geliştirme
 - [ ] ORDER - sipariş için aktivite ve tag ekleme 
-- [ ] ORDER - siparişler için daha iyi sırala, gruplandırma
-- [ ] CONTACT - daha fazla alan -şirket, adres, websitesi -
-- [ ] PAYMENT - 'amount' input yanında max değer butonu ~187/1000-> 1000/1000~
+- [ ] ACTIVITY - daha iyi aktivite planlama-
 
-- [ ] REPORTS - daha fazla veri sergileme
+- [ ] /dashboard
 
-- [ ] sayfa metadataları ayarlama
-- [ ] API kontrol
-- [ ] Ui/ux geliştirme
-improvements on orders & order listing, added /reports
+##Ekleme
+- [ ] sayfa metadata
+- [ ] AUTH - API kontrol
+- [ ] Ui/ux 
+
+##hatalar
+- [ ] REPORTS - çalışmıyor-data çekmiyor-
+

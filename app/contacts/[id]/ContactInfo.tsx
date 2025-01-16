@@ -15,6 +15,9 @@ interface Contact {
   name: string
   email: string
   phone: string
+  company?:string;
+  address?: string;
+  website?:string
 }
 interface Tag {
   id: string
@@ -23,21 +26,21 @@ interface Tag {
   updated_at: string
 }
 interface ContactInfoProps {
-  contact: Contact| null
+  contact: Contact | null
   tags: Tag[];
   onContactChange: () => void
   onTagsChange: () => void
 }
 
-export default function ContactInfo( { contact, tags,onContactChange, onTagsChange }:  ContactInfoProps  ){
+export default function ContactInfo({ contact, tags, onContactChange, onTagsChange }: ContactInfoProps) {
 
-  const [name, setName] = useState(contact?.name )
+  const [name, setName] = useState(contact?.name)
   const [email, setEmail] = useState(contact?.email)
   const [phone, setPhone] = useState(contact?.phone)
   const [isEditing, setIsEditing] = useState(false)
-  const [newCustomFieldName, setNewCustomFieldName] = useState("")
-  const [newCustomFieldValue, setNewCustomFieldValue] = useState("")
-  const [tagsX, setTags] = useState(tags)
+  const [company, setCompany] = useState("")
+  const [address, setAddress] = useState("")
+  const [website, setWebsite] = useState("")
   const [newTag, setNewTag] = useState("")
 
   const { toast } = useToast()
@@ -54,9 +57,12 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
           name,
           email,
           phone,
+          company,
+          address,
+          website
         }),
       })
-    
+
       if (!res.ok) {
         // Handle API errors here (e.g., status code errors)
         const error = await res.text();
@@ -109,14 +115,14 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
       })
     }
   }
-  const handleDeldeteTag = async (tagId:string) => {
+  const handleDeldeteTag = async (tagId: string) => {
     try {
       const res = await fetch(`/api/contacts/${contact?.id}/tags`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify( tagId ),
+        body: JSON.stringify(tagId),
       })
       if (!res.ok) {
         // Handle API errors here (e.g., status code errors)
@@ -143,9 +149,9 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
   return (
     <Card>
       <CardHeader>
-        <div  className='flex justify-between items-center'>
-        <CardTitle>Contact Information</CardTitle>
-        <Button className="mr-2" onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+        <div className='flex justify-between items-center'>
+          <CardTitle>Contact Information</CardTitle>
+          <Button className="mr-2" onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -181,48 +187,59 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
                 />
               </div>
 
-              <Button type="submit">Save Changes</Button>
+              {/* <Button type="submit">Save Changes</Button> */}
             </form>
-
-            <Tabs defaultValue="tags" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+            <hr className="my-2 " />
+            <Tabs defaultValue="fields" className="w-full ">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="fields">Custom Fields</TabsTrigger>
                 <TabsTrigger value="tags">Tags</TabsTrigger>
               </TabsList>
 
-              {/* <TabsContent value="custom-fields">
+              <TabsContent value="fields">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Custom Fields</CardTitle>
+                    <CardTitle>More Fields</CardTitle>
                     <CardDescription>Manage additional information about the contact</CardDescription>
                   </CardHeader>
-                  <CardContent>field
-                    {customFields && customFields.map((field) => (
-                      <div key={field.id} className="mb-2">
-                        <strong>{field.name}:</strong> {field.value}
-                      </div>
-                    ))}
-                    <form onSubmit={handleAddCustomField} className="mt-4 space-y-4">
-                      <Label htmlFor="customFieldName">Field Name</Label>
-                      <Input
-                        id="customFieldName"
-                        value={newCustomFieldName}
-                        onChange={(e) => setNewCustomFieldName(e.target.value)}
-                        required
-                      />
-                      <Label htmlFor="customFieldValue">Field Value</Label>
-                      <Input
-                        id="customFieldValue"
-                        value={newCustomFieldValue}
-                        onChange={(e) => setNewCustomFieldValue(e.target.value)}
-                        required
-                      />
+                  <CardContent>
 
-                      <Button type="submit">Add Custom Field</Button>
-                    </form> 
+                    {/* onSubmit={handleAddCustomField} */}
+                    <form className=" space-y-4">
+                      <div>
+                        <Label htmlFor="sirket">şirket</Label>
+                        <Input
+                          id="sirket"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="adres">adres Name</Label>
+                        <Input
+                          id="adres"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="website">website Name</Label>
+                        <Input
+                          id="website"
+                          value={website}
+                          onChange={(e) => setWebsite(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button onClick={handleUpdate}>Save Changes</Button>
+
+
+                    </form>
                   </CardContent>
                 </Card>
-              </TabsContent> */}
+              </TabsContent>
 
               <TabsContent value="tags">
                 <Card>
@@ -235,7 +252,7 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
                       {tags.map(tag => (
                         <Badge key={tag.id} variant="secondary" className="text-sm">
                           {tag.name}
-                          <button className="ml-2 text-xs" onClick={()=>handleDeldeteTag(tag.id)}>&times;</button>
+                          <button className="ml-2 text-xs" onClick={() => handleDeldeteTag(tag.id)}>&times;</button>
                         </Badge>
                       ))}
                     </div>
@@ -257,8 +274,17 @@ export default function ContactInfo( { contact, tags,onContactChange, onTagsChan
         ) : (
           <div className="space-y-2">
             <p><strong>Name:</strong> {contact?.name}</p>
-            <p><strong>Email:</strong> { contact?.email}</p>
+            <p><strong>Email:</strong> {contact?.email}</p>
             <p><strong>Phone:</strong> {contact?.phone}</p>
+            
+            {contact?.company ? <p><strong>Company:</strong> {contact.company}</p> : null }
+            {contact?.address ? <p><strong>Address:</strong> {contact.address}</p> : null }
+            {contact?.website ? <p> <strong>Website:</strong><Link className="text-blue-600 hover:text-blue-800" href={contact.website}> {contact?.website}</Link></p> : null }
+            {tags.map(tag => (
+                        <Badge key={tag.id} variant="secondary" className="text-sm cursor-default">
+                          {tag.name}
+                        </Badge>
+                      ))}
           </div>
         )
         }

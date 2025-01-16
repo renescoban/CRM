@@ -156,7 +156,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
               <tbody>
                 {groupOrders.map((order) => (
                   <tr key={order.id}>
-                    {visibleColumns.includes('id') && <td>{order.id}</td>}
+                    {visibleColumns.includes('id') && <td>{ order.products.map( (product) => product.name ) }</td>}
                     {visibleColumns.includes('total') && <td>${order.total.toFixed(2)}</td>}
                     {visibleColumns.includes('status') && (
                       <td>
