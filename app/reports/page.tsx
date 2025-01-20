@@ -1,6 +1,11 @@
 import { getActivities, getTags } from '@/lib/actions'
 import ReportsClient from './client'
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  title: "Reports",
+  description: "...",
+};
 
 export default async function Reports() {
 

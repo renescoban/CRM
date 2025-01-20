@@ -41,6 +41,7 @@ export default function AddContact() {
 
   return (
     <div className="">
+      <title>{"Add Contact"}</title>
        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Add New Contact</h1>

@@ -75,6 +75,7 @@ export default function MakeOrder() {
 
   return (
     <div className="min-h-screen ">
+       <title>{"Make Order"}</title>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Make New Order</h1>
         <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">

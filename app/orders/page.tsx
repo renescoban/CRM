@@ -1,10 +1,15 @@
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import OrderList from '@/components/OrderList'
 import OrderTable from '@/components/OrderTable'
 import { Order } from '@/types'
 import { OrderModel } from '@/models/OrderModel'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Orders',
+  description: '...',
+}
 
 async function getOrders(): Promise<Order[]> {
   const orders = await OrderModel.getAll()

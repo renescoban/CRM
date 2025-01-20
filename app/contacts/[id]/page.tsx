@@ -1,39 +1,13 @@
 "use client"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Contact, Activity, CustomField, Order, Tag } from '@/types'
 import ActivityList from '@/components/ActivityList'
-import { ContactModel } from '@/models/ContactModel'
-import { ActivityModel } from '@/models/ActivityModel'
-import { OrderModel } from '@/models/OrderModel'
-import { TagModel } from '@/models/TagsModel'
 import OrderList from '@/components/OrderList'
 import ContactInfo from './ContactInfo'
 import { useParams } from 'next/navigation'
 
 import { useEffect, useState } from 'react'
 
-/*
-async function getContactData(id: string){
-  const contact = await ContactModel.getById(id)
-  return contact 
-}
-async function getActivityData(id: string){
-  const activities = await ActivityModel.getByContactId(id)
-  return activities 
-}
-async function getOrderData(id: string){
-  const orders = await OrderModel.getByContactId(id)
-  return orders 
-}
-async function getTagsData(id: string){
-  const tags =  await TagModel.getByContactId(id)
-  return tags 
-}
-async function getCustomfieldsData(id: string){
-   
-}
-*/
 export default  function ContactDetails() {
 
    const { id } = useParams<{ id: string; }>()
@@ -118,6 +92,7 @@ export default  function ContactDetails() {
   
   return (
     <div className="min-h-screen ">
+      <title>{"Contact id"}</title>
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Contact Details</h1>
