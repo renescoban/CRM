@@ -39,7 +39,12 @@ export default function OrderDetails() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   const [order, setOrder] = useState<Order | null>(null)
-  const [editedOrder, setEditedOrder] = useState<EditedOrder>({})
+  const [editedOrder, setEditedOrder] = useState<EditedOrder>({
+    status: "",
+    importance: 0,
+    products: [],
+    note: "",
+  })
   const [products, setProducts] = useState([{ name: '', price: 0, count: 1 }])
   const [payments, setPayments] = useState<Payment[]>([])
   const [newPayment, setNewPayment] = useState<Omit<Payment, 'id' | 'created_at' | 'updated_at'>>({
