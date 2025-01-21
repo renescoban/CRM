@@ -27,7 +27,8 @@ import {
 interface EditedOrder {
   status: string;
   note?: string;
-  importance?:number
+  importance:number
+  products:{ name: string, price: number, count: number }[]
 }
 
 export default function OrderDetails() {
@@ -38,7 +39,8 @@ export default function OrderDetails() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   const [order, setOrder] = useState<Order | null>(null)
-  const [editedOrder, setEditedOrder] = useState<Partial<EditedOrder>>({})
+  const [editedOrder, setEditedOrder] = useState<EditedOrder>({})
+  const [products, setProducts] = useState([{ name: '', price: 0, count: 1 }])
   const [payments, setPayments] = useState<Payment[]>([])
   const [newPayment, setNewPayment] = useState<Omit<Payment, 'id' | 'created_at' | 'updated_at'>>({
     amount: 0,
@@ -47,47 +49,51 @@ export default function OrderDetails() {
     order_id: id
   })
 
-
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchOrderAndPayments = async () => {
-      try {
-        const orderRes = await
-          fetch(`/api/orders/${id}`,  )
+  const fetchOrderAndPayments = async () => {
+    try {
+      const orderRes = await
+        fetch(`/api/orders/${id}`,  )
 
-        if (!orderRes.ok) {
-          throw new Error('Failed to fetch order or payments')
-        }
-
-        const orderData = await orderRes.json()
-
-        setOrder(orderData)
-        setEditedOrder({ status: orderData.status, note: orderData.note, importance: orderData.importance })
-        setPayments(orderData.payments )
-      } catch (error) {
-        console.error('Error fetching order and payments:', error)
-        toast({
-          title: "Error",
-          description: "Failed to load order details and payments. Please try again.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
+      if (!orderRes.ok) {
+        throw new Error('Failed to fetch order or payments')
       }
-    }
 
+      const orderData = await orderRes.json()
+
+      setOrder(orderData)
+      setProducts(orderData.products)
+      setEditedOrder({ status: orderData.status, note: orderData.note, importance: orderData.importance, products:orderData.products })
+      setPayments( orderData.payments )
+    } catch (error) {
+      console.error('Error fetching order and payments:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load order details and payments. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    
     fetchOrderAndPayments()
   }, [id])
 
   const handleEditOrder = async () => {
     try {
+      const total = editedOrder.products.reduce((sum, product) => sum + product.price * product.count, 0) 
+      const remainingBalance = total  - totalPaid 
+
       const res = await fetch(`/api/orders/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editedOrder),
+        body: JSON.stringify({...editedOrder, total, remaining_balance:remainingBalance}),
         
       })
 
@@ -98,37 +104,8 @@ export default function OrderDetails() {
         throw new Error(error);
       }
 
-      const updatedOrder = (await res.json()) as Partial<Order>;
-      setOrder((prevOrder) => {
-        // If prevOrder is null, initialize a new Order with required fields
-        if (!prevOrder) {
-          return {
-            id: updatedOrder.id || "unknown-id", // Replace with a sensible default
-            contact_id: updatedOrder.contact_id || "unknown-contact",
-            total: updatedOrder.total || 0,
-            status: updatedOrder.status || "pending",
-            products: updatedOrder.products || [],
-            created_at: updatedOrder.created_at || new Date().toISOString(),
-            updated_at: updatedOrder.updated_at || new Date().toISOString(),
-            remainingBalance: updatedOrder.remainingBalance || 0,
-            estimated_delivery: updatedOrder.estimated_delivery || Date.now(),
-            importance: updatedOrder.importance ?? 0,
-            note: updatedOrder.note,
-            contacts: updatedOrder.contacts,
-            payments: updatedOrder.payments,
-          };
-        }
-      
-        // Merge updatedOrder into the existing prevOrder
-        return {
-          ...prevOrder,
-          status: updatedOrder.status || prevOrder.status,
-          note: updatedOrder.note ?? prevOrder.note,
-          importance: updatedOrder.importance ?? prevOrder.importance,
-          id: updatedOrder.id ?? prevOrder.id,
-          contact_id: updatedOrder.contact_id ?? prevOrder.contact_id,
-        };
-      });
+      fetchOrderAndPayments()
+
       setIsEditing(false)
       toast({
         title: "Order updated",
@@ -167,6 +144,7 @@ export default function OrderDetails() {
         status: 'completed',
         order_id: id
       })
+      fetchOrderAndPayments()
 
       toast({
         title: "Payment added",
@@ -238,6 +216,12 @@ export default function OrderDetails() {
     }
   }
 
+  const updateProduct = (index: number, field: string, value: string | number) => {
+    const updatedProducts = [...products]
+    updatedProducts[index] = { ...updatedProducts[index], [field]: value }
+    setEditedOrder({...editedOrder, products: updatedProducts})
+  }
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -295,6 +279,32 @@ export default function OrderDetails() {
                     placeholder="Add any additional notes here"
                   />
                 </div>
+                
+                <div>
+                <Label>Products</Label>
+            {editedOrder.products?.map((product, index) => (
+              <div key={index} className="flex space-x-2 mt-2">
+                <Input
+                  placeholder="Product name"
+                  value={product.name}
+                  onChange={(e) => updateProduct(index, 'name', e.target.value)}
+                />
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={product.price}
+                  onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Count"
+                  value={product.count}
+                  onChange={(e) => updateProduct(index, 'count', parseInt(e.target.value))}
+                />
+              </div>
+            ))}
+                </div>
+                
                 <div className="flex space-x-2">
                   <Button type="submit">Save Changes</Button>
                   <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>

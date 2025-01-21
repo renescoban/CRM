@@ -108,17 +108,20 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
+              <CardTitle>Recent Activities <Link href="/activities">
+                <Button variant="outline" size={"sm"}>More {"->"} </Button>
+              </Link></CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {recentActivities.map((activity) => (
+                {recentActivities.slice(0, 3).map((activity) => (
                   <li key={activity.id} className="text-sm">
                     <span className="font-semibold capitalize">{activity.type}</span> with <Link className='font-semibold text-blue-600 hover:underline' href={`/contacts/${activity.contact_id}`}>{activity.contacts.name}</Link> 
                     <br />
                     {activity.description.slice(0, 50)}...
                     <br />
                     <span className="text-xs text-gray-500">{new Date(activity.date).toLocaleDateString()}</span>
+                    <hr />
                   </li>
                 ))}
               </ul>
@@ -156,6 +159,7 @@ export default function Dashboard() {
                     {reminder.description.slice(0, 50)}...
                     <br />
                     <span className="text-xs text-gray-500">{new Date(reminder.date).toLocaleDateString()}</span>
+                    <hr />
                   </li>
                 ))}
               </ul>
@@ -179,13 +183,14 @@ export default function Dashboard() {
               <ul className="space-y-2">
                 {orders.slice(0, 5).map((order) => (
                   <li key={order.id} className="text-sm">
-                    <Link href={`/orders/${order.id}`} className="text-blue-600 hover:underline">
+                    <Link  href={`/orders/${order.id}`} className="line-clamp-1 text-blue-600 hover:underline">
                       Order #{order.id}
                     </Link>
-                    <br />
+                    
                     <span className="text-xs text-gray-500">
                       Total: ${order.total.toFixed(2)} - Status: {order.status} - Date: {new Date(order.created_at).toLocaleDateString()}
                     </span>
+                    <hr />
                   </li>
                 ))}
               </ul>

@@ -23,55 +23,6 @@ export async function getTags(){
 
 
 
-export async function addContact(data: Omit<Contact, 'id' | 'activities'>) {
+export async function getReport(data:any) {
 return 0
 }
-
-export async function updateContact(id: number, data: Partial<Contact>) {
-  return 0
-}
-
-export async function deleteContact(id: number) {
-  return 0
-}
-
-export async function addActivity(contactId: number, data: Omit<Activity, 'id' | 'contactId'>) {
-  return 0
-}
-
-export async function updateActivity(id: number, data: Partial<Activity>) {
-  return 0
-}
-
-export async function deleteActivity(id: number) {
-  return 0
-}
-
-export async function addCustomField(contactId: number, data: Omit<CustomField, 'id'>) {
-  return 0
-}
-
-export async function addTag(contactId: number, tag: string) {
-  return 0
-}
-
-export async function removeTag(contactId: number, tag: string) {
-  return 0
-}
-
-export async function makeOrder(data: Omit<Order, 'id' | 'createdAt'>) {
-  return 0
-}
-
-export async function updateOrder(id: number, data: Partial<Order>) {
-  return 0
-}
-
-export async function deleteOrder(id: number) {
-  return 0
-}
-
-export async function processPayment(orderId: number, amount: number, method: Payment['method'], notes?: string) {
-  return 0
-}
-

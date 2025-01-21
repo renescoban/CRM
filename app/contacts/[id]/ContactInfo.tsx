@@ -104,13 +104,13 @@ export default function ContactInfo({ contact, tags, onContactChange, onTagsChan
       onTagsChange()
       setNewTag("")
       toast({
-        title: "Contact updated",
-        description: "The contact tag information has been successfully updated.",
+        title: "Tag Added",
+        description: "The contact tag information has been successfully added.",
       })
     } catch (error) {
       toast({
         title: "Error",
-        description: "There was an error updating the tags. Please try again.",
+        description: "There was an error adding the tag. Please try again.",
         variant: "destructive",
       })
     }
