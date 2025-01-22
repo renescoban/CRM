@@ -1,182 +1,155 @@
-import { getActivities, getTags } from '@/lib/actions'
-import ReportsClient from './client'
+import { Suspense } from 'react';
 import { Metadata } from 'next';
-import SumsPage from './Sums';
-import PredictiveAnalytics from './PredictiveAnalytics';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrderModel } from '@/models/OrderModel';
 import { ContactModel } from '@/models/ContactModel';
 import { PaymentModel } from '@/models/PaymentModel';
-import OrderPaymentChart from './OrderPaymentChart';
+import { TagModel } from '@/models/TagsModel';
+import { ActivityModel } from '@/models/ActivityModel';
+import dynamic from 'next/dynamic';
+
+// Dynamically import components with loading fallbacks
+const ReportsClient = dynamic(() => import('./client'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
+});
+
+const OrderPaymentChart = dynamic(() => import('./OrderPaymentChart'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
+});
+
+const PredictiveAnalytics = dynamic(() => import('./PredictiveAnalytics'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
+});
 
 export const metadata: Metadata = {
   title: "Reports",
   description: "...",
 };
 
-async function getReportData() {
-  const orders = await OrderModel.getAll()
-  const contacts = await ContactModel.getAll()
-  const payments = await PaymentModel.getAll()
-  const period = "daily"
+interface ProcessedTag {
+  name: string;
+  count: number;
+}
 
-  const ordersByDate = groupByDate(orders, period)
-  const paymentsByDate = groupByDate(payments, period)
-
-  const chartData = combineOrdersAndPayments(ordersByDate, paymentsByDate)
-
-  // Calculate metrics
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
-  const totalOrders = orders.length
-  const AOV = totalOrders > 0 ? totalRevenue / totalOrders : 0
-
-  const customerData = payments.map((payment) => {
-    const customerOrders = orders.filter((order) => order.contact_id === payment.contact_id)
-    const customerRevenue = customerOrders.reduce((sum, order) => sum + order.total, 0)
-    const firstOrderDate = new Date(Math.min(...customerOrders.map((o) => new Date(o.created_at).getTime())))
-    const lastOrderDate = new Date(Math.max(...customerOrders.map((o) => new Date(o.created_at).getTime())))
-    const daysSinceFirstOrder = (new Date().getTime() - firstOrderDate.getTime()) / (1000 * 3600 * 24)
-
-    return {
-      id: payment.contact_id,
-      revenue: customerRevenue,
-      orderCount: customerOrders.length,
-      firstOrderDate,
-      lastOrderDate,
-      daysSinceFirstOrder,
-    }
-  })
-
-  const totalCustomers = customerData.length
-  const CLV = totalCustomers > 0 ? totalRevenue / totalCustomers : 0
-
-  // Calculate retention rate (simplified: customers with more than one order)
-  const repeatCustomers = customerData.filter((c) => c.orderCount > 1).length
-  const retentionRate = totalCustomers > 0 ? (repeatCustomers / totalCustomers) * 100 : 0
-
-  // Prepare data for predictive analytics
-  const last12Months = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date()
-    date.setMonth(date.getMonth() - i)
-    return date.toISOString().slice(0, 7) // YYYY-MM format
-  }).reverse()
-
-  const monthlySales = last12Months.map((month) => {
-    const monthOrders = orders.filter((order) => order.created_at.startsWith(month))
-    return {
-      month,
-      sales: monthOrders.reduce((sum, order) => sum + order.total, 0),
-    }
-  })
-
-  const reportData = {
-    chartData,
-    totalRevenue,
-    totalOrders,
-    AOV,
-    CLV,
-    retentionRate,
-    customerData,
-    monthlySales,
+// Memoize data fetching functions
+const getActivities = async () => {
+  try {
+    return await ActivityModel.getAllType();
+  } catch {
+    return [];
   }
-  return (reportData)
-}
+};
 
-function groupByDate(items: any[], period: string) {
-  return items.reduce((acc, item) => {
-    const date = new Date(item.created_at)
-    const key =
-      period === "daily"
-        ? date.toISOString().split("T")[0]
-        : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+const getTags = async (): Promise<ProcessedTag[]> => {
+  try {
+    return await TagModel.getTagCounts("contact") as ProcessedTag[];
+  } catch (error) {
+    console.error("err: ", error);
+    return [];
+  }
+};
 
-    if (!acc[key]) {
-      acc[key] = { orders: 0, payments: 0 }
+const calculateMetrics = (orders: any[], contacts: any[]) => {
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalOrders = orders.length;
+  const AOV = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+  const customerData = new Map();
+  orders.forEach((order) => {
+    const customerId = order.contact_id;
+    const orderDate = new Date(order.created_at);
+    
+    if (!customerData.has(customerId)) {
+      customerData.set(customerId, {
+        revenue: 0,
+        orderCount: 0,
+        firstOrderDate: orderDate,
+        lastOrderDate: orderDate
+      });
     }
+    
+    const customer = customerData.get(customerId);
+    customer.revenue += order.total;
+    customer.orderCount += 1;
+    customer.firstOrderDate = orderDate < customer.firstOrderDate ? orderDate : customer.firstOrderDate;
+    customer.lastOrderDate = orderDate > customer.lastOrderDate ? orderDate : customer.lastOrderDate;
+  });
 
-    if ("total" in item) {
-      acc[key].orders += item.total
-    } else if ("amount" in item) {
-      acc[key].payments += item.amount
-    }
+  const totalCustomers = contacts.length;
+  const CLV = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+  const repeatCustomers = Array.from(customerData.values()).filter(c => c.orderCount > 1).length;
+  const retentionRate = totalCustomers > 0 ? (repeatCustomers / totalCustomers) * 100 : 0;
 
-    return acc
-  }, {})
-}
+  return { totalRevenue, totalOrders, AOV, CLV, retentionRate };
+};
 
-function combineOrdersAndPayments(orders: { [x: string]: { orders: any; }; }, payments: { [x: string]: { payments: any; }; }) {
-  const allDates = new Set([...Object.keys(orders), ...Object.keys(payments)])
-  return Array.from(allDates)
-    .map((date) => ({
-      date,
-      orders: orders[date]?.orders || 0,
-      payments: payments[date]?.payments || 0,
-    }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-}
+const getReportData = async () => {
+  const [orders, contacts, payments] = await Promise.all([
+    OrderModel.getAll(),
+    ContactModel.getAll(),
+    PaymentModel.getAll()
+  ]);
+
+  const metrics = calculateMetrics(orders, contacts);
+  
+  // Calculate monthly sales for the last 12 months
+  const monthlySales = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = date.toISOString().slice(0, 7);
+    const monthOrders = orders.filter(order => order.created_at.startsWith(monthKey));
+    return {
+      month: monthKey,
+      sales: monthOrders.reduce((sum, order) => sum + order.total, 0)
+    };
+  }).reverse();
+
+  return { orders, payments, ...metrics, monthlySales };
+};
+
+const MetricCard = ({ title, value, format = (v: any) => v }: {title:string, value:number, format?: (value: any) => string; }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p className="text-2xl font-bold">{format(value)}</p>
+    </CardContent>
+  </Card>
+);
 
 export default async function Reports() {
+  const [activities, tags, reportData] = await Promise.all([
+    getActivities(),
+    getTags(),
+    getReportData()
+  ]);
+  
+  return (
+    <div className="min-h-screen">
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Reports</h1>
 
-  try {
-    const [activities, tags, reportData] = await Promise.all([getActivities(), getTags(), getReportData()])
-    return (
-      <div className="min-h-screen">
-        <main className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-6">Reports</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <MetricCard title="Total Revenue" value={reportData.totalRevenue} format={v => `$${v.toFixed(2)}`} />
+          <MetricCard title="Total Orders" value={reportData.totalOrders} />
+          <MetricCard title="Average Order Value (AOV)" value={reportData.AOV} format={v => `$${v.toFixed(2)}`} />
+          <MetricCard title="Customer Lifetime Value (CLV)" value={reportData.CLV} format={v => `$${v.toFixed(2)}`} />
+          <MetricCard title="Retention Rate" value={reportData.retentionRate} format={v => `${v.toFixed(2)}%`} />
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Total Revenue</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${reportData.totalRevenue.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Total Orders</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{reportData.totalOrders}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Average Order Value (AOV)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${reportData.AOV.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Customer Lifetime Value (CLV)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${reportData.CLV.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Retention Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{reportData.retentionRate.toFixed(2)}%</p>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="md:flex">
-            <OrderPaymentChart data={reportData.chartData} />
+        <div className="md:flex">
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
+            <OrderPaymentChart dataX={reportData.orders} dataY={reportData.payments} />
+          </Suspense>
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>}>
             <PredictiveAnalytics monthlySales={reportData.monthlySales} />
+          </Suspense>
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>}>
             <ReportsClient initialActivities={activities} initialTags={tags} />
-          </div>
-        </main>
-      </div>
-
-    )
-  } catch (error) {
-    console.error('Error fetching report data:', error)
-    return <div>Error loading report data. Please try again later.</div>
-  }
+          </Suspense>
+        </div>
+      </main>
+    </div>
+  );
 }

@@ -1,17 +1,8 @@
 import { createClient } from "@/utils/supabase/server"
 import { Contact } from "@/types"
 
-export interface Contact22 {
-  id: string
-  name: string
-  email: string
-  phone: string
-  created_at: string
-  updated_at: string
-}
 
 export class ContactModel {
-  
   static async getAll() {
     const supabase = await createClient()
 
@@ -50,7 +41,7 @@ export class ContactModel {
       .update(contact)
       .eq('id', id)
       .select()
-      
+
     if (error) throw error
     return data[0]
   }
@@ -63,8 +54,6 @@ export class ContactModel {
       .eq('id', id)
     if (error) throw error
   }
-
-
 
 }
 

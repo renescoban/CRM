@@ -7,32 +7,37 @@ import { Activity, Tag } from '@/types'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface ReportsClientProps {
-  initialActivities: Activity[]
-  initialTags: Tag[]
+  initialActivities: {type: string }[]
+  initialTags: { name:string, count:number}[]
 }
 
 export default function ReportsClient({ initialActivities, initialTags }: ReportsClientProps) {
   const [reportType, setReportType] = useState<'activities' | 'tags'>('activities')
 
-  const activityData = initialActivities.reduce((acc, activity) => {
-    if (acc[activity.type]) {
-      acc[activity.type]++
-    } else {
-      acc[activity.type] = 1
-    }
-    return acc
-  }, {} as Record<string, number>)
 
-  const tagData = initialTags.reduce((acc, tag) => {
-    if (acc[tag.name]) {
-      acc[tag.name]++
-    } else {
-      acc[tag.name] = 1
-    }
-    return acc
-  }, {} as Record<string, number>)
+    const itemMap = new Map<string, { name:string, count: number }>();
+  
+    for (const item of initialActivities) {
 
-  const chartData = Object.entries(reportType === 'activities' ? activityData : tagData).map(([name, value]) => ({ name, value }))
+      const name = item.type;
+  
+      if (itemMap.has(name)) {
+        // If the type already exists in the map, increment its count
+        const existingItem = itemMap.get(name)!;
+        existingItem.count += 1;
+      } else {
+        // If the type doesn't exist in the map, add it with a count of 1
+        itemMap.set(name, {
+          name,
+          count: 1,
+        });
+      }
+    }
+  
+    // Convert the map values to an array
+    const activityData =  Array.from(itemMap.values());
+  
+  const chartData = reportType === 'activities' ?  activityData: initialTags
 
   return (
     <div className="min-h-screen ">
@@ -49,7 +54,7 @@ export default function ReportsClient({ initialActivities, initialTags }: Report
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="activities">Activities</SelectItem>
-                <SelectItem value="tags">Tags</SelectItem>
+                <SelectItem value="tags">Contact Tags</SelectItem>
               </SelectContent>
             </Select>
           </CardContent>
@@ -65,7 +70,7 @@ export default function ReportsClient({ initialActivities, initialTags }: Report
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" fill="#8884d8" />
+                <Bar dataKey="count" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

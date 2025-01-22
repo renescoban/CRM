@@ -9,6 +9,7 @@ import { Label } from "@radix-ui/react-label"
 
 import Link from "next/link"
 import { ReactNode, useState } from "react"
+import { Tag } from "@/types"
 
 interface Contact {
   id: string
@@ -19,12 +20,8 @@ interface Contact {
   address?: string;
   website?:string
 }
-interface Tag {
-  id: string
-  name: string
-  created_at: string
-  updated_at: string
-}
+
+
 interface ContactInfoProps {
   contact: Contact | null
   tags: Tag[];

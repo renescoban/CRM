@@ -1,12 +1,12 @@
 ## geliştirme
-- [ ] ORDER - sipariş için aktivite ve tag ekleme 
-- [ ] ORDER - pdf çıktı
+- [ ] ORDER - sipariş içinaktivite ve tag ekleme 
 - [ ] ACTIVITY - daha iyi aktivite planlama- Timeline
 - [ ] /activities
 
 ## Ekleme
 - [ ] AUTH - API kontrol
 - [ ] Ui/ux 
+- [ ] ORDER - pdf çıktı
 
 ## hatalar
 - [ ] REPORTS

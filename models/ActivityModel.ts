@@ -10,6 +10,14 @@ export class ActivityModel {
     if (error) throw error
     return data
   }
+  static async getAllType() {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('activities')
+      .select('type')
+    if (error) throw error
+    return data
+  }
 
   static async getById(id: string) {
     const supabase =await createClient()

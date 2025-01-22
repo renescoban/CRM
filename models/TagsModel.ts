@@ -1,10 +1,36 @@
+import { Tag } from "@/types"
 import { createClient } from "@/utils/supabase/server"
 
- interface Tag {
-  id: string
-  name: string
-  created_at: string
-  updated_at: string
+interface RawOrderTag {
+  tag_id: string,
+  tags: { name: string } | null,
+}
+interface ProcessedTag {
+  name: string,
+  count: number
+}
+function processTags(data: RawOrderTag[]): ProcessedTag[] {
+  const tagMap = new Map<string, ProcessedTag>();
+
+  for (const item of data) {
+    const { tag_id, tags } = item;
+    const tagName = tags?.name || "Unknown";
+
+    if (tagMap.has(tag_id)) {
+      // If the tag already exists in the map, increment its count
+      const existingTag = tagMap.get(tag_id)!;
+      existingTag.count += 1;
+    } else {
+      // If the tag doesn't exist in the map, add it with a count of 1
+      tagMap.set(tag_id, {
+        name: tagName,
+        count: 1,
+      });
+    }
+  }
+
+  // Convert the map values to an array
+  return Array.from(tagMap.values());
 }
 
 export class TagModel {
@@ -30,7 +56,7 @@ export class TagModel {
     return data
   }
 
-  static async create(tag: Omit<Tag, 'id' | 'created_at' | 'updated_at'> ) {
+  static async create(tag: Omit<Tag, 'id' | 'created_at' | 'updated_at'>) {
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -97,6 +123,22 @@ export class TagModel {
       console.error('Unexpected error:', err);
       return null;
     }
+  }
+
+  static async getTagCounts(table: "order" | "contact") {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from(`${table}_tags`)
+      .select(`
+        tag_id,
+        tags (name)
+      `)
+
+    if (error) throw error
+
+    const processedTags = processTags(data as unknown as RawOrderTag[])  ;
+    return processedTags
   }
 }
 
