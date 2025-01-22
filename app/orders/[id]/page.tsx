@@ -27,8 +27,8 @@ import {
 interface EditedOrder {
   status: string;
   note?: string;
-  importance:number
-  products:{ name: string, price: number, count: number }[]
+  importance: number
+  products: { name: string, price: number, count: number }[]
 }
 
 export default function OrderDetails() {
@@ -53,13 +53,14 @@ export default function OrderDetails() {
     status: 'completed',
     order_id: id
   })
+  const [newTag, setNewTag] = useState("")
 
   const { toast } = useToast()
 
   const fetchOrderAndPayments = async () => {
     try {
       const orderRes = await
-        fetch(`/api/orders/${id}`,  )
+        fetch(`/api/orders/${id}`,)
 
       if (!orderRes.ok) {
         throw new Error('Failed to fetch order or payments')
@@ -69,8 +70,8 @@ export default function OrderDetails() {
 
       setOrder(orderData)
       setProducts(orderData.products)
-      setEditedOrder({ status: orderData.status, note: orderData.note, importance: orderData.importance, products:orderData.products })
-      setPayments( orderData.payments )
+      setEditedOrder({ status: orderData.status, note: orderData.note, importance: orderData.importance, products: orderData.products })
+      setPayments(orderData.payments)
     } catch (error) {
       console.error('Error fetching order and payments:', error)
       toast({
@@ -84,22 +85,22 @@ export default function OrderDetails() {
   }
 
   useEffect(() => {
-    
+
     fetchOrderAndPayments()
   }, [id])
 
   const handleEditOrder = async () => {
     try {
-      const total = editedOrder.products.reduce((sum, product) => sum + product.price * product.count, 0) 
-      const remainingBalance = total  - totalPaid 
+      const total = editedOrder.products.reduce((sum, product) => sum + product.price * product.count, 0)
+      const remainingBalance = total - totalPaid
 
       const res = await fetch(`/api/orders/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({...editedOrder, total, remaining_balance:remainingBalance}),
-        
+        body: JSON.stringify({ ...editedOrder, total, remaining_balance: remainingBalance }),
+
       })
 
       if (!res.ok) {
@@ -172,7 +173,7 @@ export default function OrderDetails() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify( paymentId ),
+        body: JSON.stringify(paymentId),
       })
 
       if (!res.ok) {
@@ -193,7 +194,7 @@ export default function OrderDetails() {
       })
     }
   }
-  
+
   const handleDeleteOrder = async (orderId: string) => {
     try {
       const res = await fetch(`/api/orders/${id}`, {
@@ -201,7 +202,7 @@ export default function OrderDetails() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify( orderId ),
+        body: JSON.stringify(orderId),
       })
 
       if (!res.ok) {
@@ -224,7 +225,74 @@ export default function OrderDetails() {
   const updateProduct = (index: number, field: string, value: string | number) => {
     const updatedProducts = [...products]
     updatedProducts[index] = { ...updatedProducts[index], [field]: value }
-    setEditedOrder({...editedOrder, products: updatedProducts})
+    setEditedOrder({ ...editedOrder, products: updatedProducts })
+  }
+
+  
+  const handleAddTag = async () => {
+    if (!newTag.trim() || !order) return
+
+    try {
+      const res = await fetch(`/api/orders/${id}/tags`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newTag.trim() }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to add tag")
+      }
+
+      const addedTag = await res.json()
+      setOrder({
+        ...order,
+        tags: [...(order.tags || []), addedTag],
+      })
+      setNewTag("")
+      toast({
+        title: "Tag added",
+        description: "The tag has been successfully added to the order.",
+      })
+    } catch (error) {
+      console.error("Error adding tag:", error)
+      toast({
+        title: "Error",
+        description: "Failed to add the tag. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeldeteTag = async (tagId: string) => {
+    if (!order) return
+
+    try {
+      const res = await fetch(`/api/orders/${id}/tags/${tagId}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to remove tag")
+      }
+
+      setOrder({
+        ...order,
+        tags: order.tags?.filter((tag) => tag.id !== tagId) || [],
+      })
+      toast({
+        title: "Tag removed",
+        description: "The tag has been successfully removed from the order.",
+      })
+    } catch (error) {
+      console.error("Error removing tag:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove the tag. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   if (isLoading) {
@@ -274,7 +342,7 @@ export default function OrderDetails() {
                     </SelectContent>
                   </Select>
                 </div>
-                <StarRating displayMode={!isEditing} maxStars={3} onChange={(value) =>setEditedOrder({ ...editedOrder, importance:value})} />
+                <StarRating displayMode={!isEditing} maxStars={3} onChange={(value) => setEditedOrder({ ...editedOrder, importance: value })} />
                 <div>
                   <Label htmlFor="note">Order Note</Label>
                   <Textarea
@@ -284,32 +352,59 @@ export default function OrderDetails() {
                     placeholder="Add any additional notes here"
                   />
                 </div>
-                
+
                 <div>
-                <Label>Products</Label>
-            {editedOrder.products?.map((product, index) => (
-              <div key={index} className="flex space-x-2 mt-2">
-                <Input
-                  placeholder="Product name"
-                  value={product.name}
-                  onChange={(e) => updateProduct(index, 'name', e.target.value)}
-                />
-                <Input
-                  type="number"
-                  placeholder="Price"
-                  value={product.price}
-                  onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value))}
-                />
-                <Input
-                  type="number"
-                  placeholder="Count"
-                  value={product.count}
-                  onChange={(e) => updateProduct(index, 'count', parseInt(e.target.value))}
-                />
-              </div>
-            ))}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Tags</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {order.tags?.map(tag => (
+                          <Badge key={tag.id} variant="secondary" className="text-sm">
+                            {tag.name}
+                            <button type='button' className="ml-2 text-xs" onClick={() => handleDeldeteTag(tag.id)}>&times;</button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={newTag}
+                          onChange={(e) => setNewTag(e.target.value)}
+                          placeholder="New tag"
+                          className="flex-grow"
+                        />
+                        <Button type='button' onClick={handleAddTag}>Add Tag</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                
+
+                <div>
+                  <Label>Products</Label>
+                  {editedOrder.products?.map((product, index) => (
+                    <div key={index} className="flex space-x-2 mt-2">
+                      <Input
+                        placeholder="Product name"
+                        value={product.name}
+                        onChange={(e) => updateProduct(index, 'name', e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Price"
+                        value={product.price}
+                        onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Count"
+                        value={product.count}
+                        onChange={(e) => updateProduct(index, 'count', parseInt(e.target.value))}
+                      />
+                    </div>
+                  ))}
+                </div>
+
                 <div className="flex space-x-2">
                   <Button type="submit">Save Changes</Button>
                   <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
@@ -330,8 +425,15 @@ export default function OrderDetails() {
                   <StarRating displayMode={true} maxStars={order.importance} />
                 </div>
                 <div>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                        {order.tags?.map(tag => (
+                          <Badge key={tag.id} variant="secondary" className="text-sm">
+                            {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
                   {order.note && <p><strong>Note:</strong> {order.note}</p>}
-                  </div>
+                </div>
               </div>)
             }
           </CardContent>
@@ -365,83 +467,83 @@ export default function OrderDetails() {
           </CardContent>
         </Card>
         <hr className='mb-6' />
-        <Dialog  open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogTrigger asChild>
-          <Button className="mb-2">Add Payment</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Activity</DialogTitle>
-            <form onSubmit={(e) => { e.preventDefault(); handleAddPayment(); }} className="space-y-4">
-          <div>
-            <Label htmlFor="amount">Amount</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              value={newPayment.amount}
-              onChange={(e) =>{ 
-                setNewPayment({ ...newPayment, amount:Math.min(remainingBalance, Math.max(0, parseFloat(e.target.value) ))  });
-            }}
-              required
-            />
-            <input id='max' type='checkbox' checked={newPayment.amount == remainingBalance} onChange={()=>setNewPayment({ ...newPayment, amount:remainingBalance })} />
-            <label htmlFor="max">max</label> <span>kalan - {remainingBalance-newPayment.amount}</span>
-          </div>
-          <div>
-            <Label htmlFor="method">Payment Method</Label>
-            <Select
-              value={newPayment.method}
-              onValueChange={(value) => setNewPayment({ ...newPayment, method: value as Payment['method'] })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="credit_card">Credit Card</SelectItem>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="status">Payment Status</Label>
-            <Select
-              value={newPayment.status}
-              onValueChange={(value) => setNewPayment({ ...newPayment, status: value as Payment['status'] })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="orderNote">Payment Note</Label>
-            <Textarea
-              id="orderNote"
-              value={newPayment.note}
-              onChange={(event) => setNewPayment({ ...newPayment, note: event.target.value })}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="mb-2">Add Payment</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Activity</DialogTitle>
+              <form onSubmit={(e) => { e.preventDefault(); handleAddPayment(); }} className="space-y-4">
+                <div>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={newPayment.amount}
+                    onChange={(e) => {
+                      setNewPayment({ ...newPayment, amount: Math.min(remainingBalance, Math.max(0, parseFloat(e.target.value))) });
+                    }}
+                    required
+                  />
+                  <input id='max' type='checkbox' checked={newPayment.amount == remainingBalance} onChange={() => setNewPayment({ ...newPayment, amount: remainingBalance })} />
+                  <label htmlFor="max">max</label> <span>kalan - {remainingBalance - newPayment.amount}</span>
+                </div>
+                <div>
+                  <Label htmlFor="method">Payment Method</Label>
+                  <Select
+                    value={newPayment.method}
+                    onValueChange={(value) => setNewPayment({ ...newPayment, method: value as Payment['method'] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="credit_card">Credit Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="status">Payment Status</Label>
+                  <Select
+                    value={newPayment.status}
+                    onValueChange={(value) => setNewPayment({ ...newPayment, status: value as Payment['status'] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select payment status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="orderNote">Payment Note</Label>
+                  <Textarea
+                    id="orderNote"
+                    value={newPayment.note}
+                    onChange={(event) => setNewPayment({ ...newPayment, note: event.target.value })}
 
-              placeholder="Add any additional notes here"
-            />
-          </div>
-          <Button type="submit">Add Payment</Button>
-        </form>
-          </DialogHeader>
+                    placeholder="Add any additional notes here"
+                  />
+                </div>
+                <Button type="submit">Add Payment</Button>
+              </form>
+            </DialogHeader>
           </DialogContent>
         </Dialog>
 
         <Card>
           <CardHeader>
             <CardTitle>
-                <CardTitle>Payment History</CardTitle>
-              </CardTitle>
+              <CardTitle>Payment History</CardTitle>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {order.payments && order.payments.length > 0 ? (
@@ -457,17 +559,17 @@ export default function OrderDetails() {
                 </thead>
                 <tbody className='space-y-12'>
                   {order.payments.map((payment) => (
-                  
+
                     <tr className='h-9' key={payment.id}>
                       <td>{new Date(payment.created_at).toLocaleString()}</td>
                       <td>${payment.amount.toFixed(2)}</td>
                       <td>{payment.method}</td>
                       <td>{payment.note}</td>
                       <td><Badge variant={payment.status === 'completed' ? 'default' : 'secondary'}>{payment.status}</Badge></td>
-                      <td><TrashIcon className="w-8 h-8 p-1  cursor-pointer text-red-500 hover:bg-slate-200 rounded" onClick={() => handleDeletePayment(payment.id)}/></td>
+                      <td><TrashIcon className="w-8 h-8 p-1  cursor-pointer text-red-500 hover:bg-slate-200 rounded" onClick={() => handleDeletePayment(payment.id)} /></td>
                     </tr>
-                    
-                    ))}
+
+                  ))}
                 </tbody>
               </table>
             ) : (
@@ -477,11 +579,6 @@ export default function OrderDetails() {
 
           </CardContent>
         </Card>
-
-
-        
-
-        
 
         <Button variant="destructive" className='mt-8' onClick={() => handleDeleteOrder(id)}>Delete Order</Button>
 

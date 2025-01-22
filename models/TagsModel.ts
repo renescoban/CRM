@@ -75,5 +75,28 @@ export class TagModel {
     if (error) throw error
     return data.map(item => item.tags) as unknown as Tag[]
   }
+
+  static async getByName(name: string) {
+    const supabase = await createClient()
+
+    try {
+      // Query the 'tags' table for a tag with the given name
+      const { data, error } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('name', name)
+        .single();
+
+      if (error) {
+        console.error('Error fetching tag by name:', error);
+        return null;
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      return null;
+    }
+  }
 }
 

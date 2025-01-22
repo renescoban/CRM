@@ -36,8 +36,6 @@ export interface CustomField {
 export interface Tag {
   id: string;
   name: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface ContactTag {
@@ -47,8 +45,6 @@ export interface ContactTag {
   created_at: string;
   updated_at: string;
 }
-
-
 
 export interface Order {
   id: string;
@@ -69,7 +65,8 @@ export interface Order {
   payments?: Payment[];
   remainingBalance: number;
   estimated_delivery: number;
-  importance?:number
+  importance?:number;
+  tags?: Tag[]
 }
 
 export interface Payment {

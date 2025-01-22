@@ -26,7 +26,8 @@ export class OrderModel {
       .select(`
         *,
         contacts (name),
-        payments (*)
+        payments (*),
+        tags (*)
         `)
         .eq('id', id)
         .single()
@@ -76,5 +77,22 @@ export class OrderModel {
       .eq('id', id)
     if (error) throw error
   }
+
+  static async addTag(orderId: string, tagId: string) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+    .from("order_tags")
+    .insert({ order_id: orderId, tag_id: tagId })
+    if (error) throw error
+}
+static async removeTag(orderId: string, tagId: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+  .from("order_tags")
+  .delete()
+  .match({ order_id: orderId, tag_id: tagId })
+  if (error) throw error
+}
+
 }
 
