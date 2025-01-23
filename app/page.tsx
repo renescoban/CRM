@@ -181,7 +181,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {orders.slice(0, 5).map((order) => (
+                {orders.slice(0, 3).map((order) => (
                   <li key={order.id} className="text-sm">
                     <Link  href={`/orders/${order.id}`} className="line-clamp-1 text-blue-600 hover:underline">
                       Order #{order.id}

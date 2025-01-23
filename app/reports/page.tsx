@@ -138,7 +138,7 @@ export default async function Reports() {
           <MetricCard title="Retention Rate" value={reportData.retentionRate} format={v => `${v.toFixed(2)}%`} />
         </div>
 
-        <div className="md:flex">
+        <div className="lg:flex">
           <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
             <OrderPaymentChart dataX={reportData.orders} dataY={reportData.payments} />
           </Suspense>
