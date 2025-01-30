@@ -2,7 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const updateSession = async (request: NextRequest) => {
-
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -19,17 +18,17 @@ export const updateSession = async (request: NextRequest) => {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
+            request.cookies.set(name, value)
           );
           response = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
+            response.cookies.set(name, value, options)
           );
         },
       },
-    },
+    }
   );
 
   // This will refresh session if expired - required for Server Components
@@ -37,9 +36,27 @@ export const updateSession = async (request: NextRequest) => {
   const user = await supabase.auth.getUser();
 
   // protected routes
-  if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
+  if (user.error) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
+  if (request.nextUrl.pathname === "/" && user.data.user.user_metadata.role !== "admin") {
+    return NextResponse.redirect(new URL("/no-admin", request.url));
+  }
+  if (
+    (!user.error && request.nextUrl.pathname === "/") ||
+    request.nextUrl.pathname.startsWith("/orders") ||
+    request.nextUrl.pathname.startsWith("/contacts") ||
+    request.nextUrl.pathname === "/reports" ||
+    request.nextUrl.pathname === "/protected" ||
+    request.nextUrl.pathname === "/activities" ||
+    request.nextUrl.pathname === "/admin"
+  ) {
+    if (request.nextUrl.pathname.startsWith("/admin")) {
+      
+      
+
+    }
   }
 
   return response;
-}
+};

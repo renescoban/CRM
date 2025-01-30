@@ -8,8 +8,9 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const name = formData.get("name")?.toString();
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+
 
   if (!email || !password) {
     return encodedRedirect(
@@ -22,7 +23,12 @@ export const signUpAction = async (formData: FormData) => {
   const { error } = await supabase.auth.signUp({
     email,
     password,
-  });
+    options: {
+      data: {
+        name,
+        role: "user", // Set default role to 'user'
+      },
+  }});
 
   if (error) {
     console.error(error.code + " " + error.message);
