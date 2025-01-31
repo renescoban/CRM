@@ -1,11 +1,12 @@
 import { TagModel } from "@/models/TagsModel"
 import { createClient } from "@/utils/supabase/server"
-
-
-import { OrderModel } from "@/models/OrderModel"
+import { checkAuth } from "@/utils/utils"
 
 export async function GET( req: Request ,{ params }: { params:Promise<{ id: string }> } ) {
-    const  {id}  = await params
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+
+  const  {id}  = await params
   try {
     const tags = await TagModel.getByContactId(id)
     return Response.json(tags)
@@ -17,7 +18,10 @@ export async function GET( req: Request ,{ params }: { params:Promise<{ id: stri
 
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-    const supabase = await createClient()
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+
+  const supabase = await createClient()
     const  id  = (await params).id 
 
     try {
@@ -39,6 +43,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE(request: Request) {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+  
   try {
     const tagID = await request.json()
     await TagModel.delete(tagID)

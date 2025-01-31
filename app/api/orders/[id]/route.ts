@@ -1,9 +1,13 @@
 import { createClient } from "@/utils/supabase/server"
 import { OrderModel } from '@/models/OrderModel'
+import { checkAuth } from "@/utils/utils";
 
 type Params = Promise<{ id: string }>;
 
 export async function GET(req: Request,{ params }: { params:Params }) {
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+
   const  {id}  = await params
 
   try {
@@ -15,6 +19,9 @@ export async function GET(req: Request,{ params }: { params:Params }) {
   }
 }
 export async function PUT(req: Request,{ params }: { params:Params }) {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+
   const  {id}  = await params
 
   try {
@@ -29,6 +36,9 @@ export async function PUT(req: Request,{ params }: { params:Params }) {
 
 
 export async function DELETE(request: Request) {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+  
   try {
     const orderID = await request.json()
     await OrderModel.delete(orderID)

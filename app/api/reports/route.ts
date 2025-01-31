@@ -1,8 +1,12 @@
 import { ContactModel } from "@/models/ContactModel"
 import { OrderModel } from "@/models/OrderModel"
+import { checkAuth } from "@/utils/utils"
 import { NextResponse } from "next/server"
 
 export async function GET( req : Request ){
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+
     try {
         const orders = await OrderModel.getAll()
         const contacts = await ContactModel.getAll()

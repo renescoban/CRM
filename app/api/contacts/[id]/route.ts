@@ -1,9 +1,13 @@
 import { createClient } from "@/utils/supabase/server"
 import { ContactModel } from '@/models/ContactModel'
+import { checkAuth } from "@/utils/utils";
 
 type Params = Promise<{ id: string }>;
 
 export async function GET(req: Request,{ params }: { params:Params }) {
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+  
   const  {id}  = await params
 	
   try {
@@ -15,8 +19,10 @@ export async function GET(req: Request,{ params }: { params:Params }) {
 }
 
 export async function PUT(  request: Request,  { params }: { params:Params}) {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+  
   const  {id}  = await params
-
 
   try {
     const contactData = await request.json()
@@ -27,6 +33,9 @@ export async function PUT(  request: Request,  { params }: { params:Params}) {
   }
 }
 export async function DELETE( req: Request, { params }: { params: Params }) {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+
   const {id} = await params
 
   const supabase = createClient();

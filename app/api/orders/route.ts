@@ -1,6 +1,10 @@
 import { OrderModel } from '@/models/OrderModel'
+import { checkAuth } from '@/utils/utils'
 
 export async function GET() {
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+
   try {
     const orders = await OrderModel.getAll()
     return Response.json(orders)
@@ -11,6 +15,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+  
   try {
     const orderData = await request.json()
     const newOrder = await OrderModel.create(orderData)

@@ -1,10 +1,14 @@
 import { OrderModel } from "@/models/OrderModel";
 import { TagModel } from "@/models/TagsModel";
+import { checkAuth } from "@/utils/utils";
 
 export async function GET (req: Request){}
 type Params = Promise<{ id: string }>;
 
 export async function POST (req: Request,{ params }: { params:Params }) {
+      const authCheck = await checkAuth(true)
+      if (authCheck) return authCheck
+
     const  {id}  = await params
     const { name } = await req.json()
     try {

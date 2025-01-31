@@ -36,14 +36,12 @@ export const updateSession = async (request: NextRequest) => {
   const user = await supabase.auth.getUser();
 
   // protected routes
-  if (user.error) {
+  if ( user.error && !request.nextUrl.pathname.startsWith("/sign") ) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
-  if (request.nextUrl.pathname === "/" && user.data.user.user_metadata.role !== "admin") {
-    return NextResponse.redirect(new URL("/no-admin", request.url));
-  }
+
   if (
-    (!user.error && request.nextUrl.pathname === "/") ||
+   user.data.user?.user_metadata.role !== "admin" &&
     request.nextUrl.pathname.startsWith("/orders") ||
     request.nextUrl.pathname.startsWith("/contacts") ||
     request.nextUrl.pathname === "/reports" ||
@@ -51,11 +49,7 @@ export const updateSession = async (request: NextRequest) => {
     request.nextUrl.pathname === "/activities" ||
     request.nextUrl.pathname === "/admin"
   ) {
-    if (request.nextUrl.pathname.startsWith("/admin")) {
-      
-      
-
-    }
+    return NextResponse.redirect(new URL("/no-admin", request.url));
   }
 
   return response;

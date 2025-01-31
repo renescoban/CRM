@@ -1,6 +1,10 @@
 import { PaymentModel } from "@/models/PaymentModel"
+import { checkAuth } from "@/utils/utils"
 
 export async function POST(request: Request) {
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+
   try {
     const paymentData = await request.json()
     const newPayment = await PaymentModel.create(paymentData)
@@ -11,6 +15,9 @@ export async function POST(request: Request) {
   }
 }
 export async function DELETE(request: Request) {
+    const authCheck = await checkAuth(true)
+    if (authCheck) return authCheck
+    
   try {
     const paymentID = await request.json()
     console.log(typeof(paymentID))

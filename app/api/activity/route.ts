@@ -1,7 +1,11 @@
 import { createClient } from "@/utils/supabase/server"
 import { ActivityModel } from '@/models/ActivityModel'
+import { checkAuth } from "@/utils/utils"
 
 export async function GET() {
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
+
   try {
     const activities = await ActivityModel.getAll()
     return Response.json(activities)
@@ -11,7 +15,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-	const supabase = createClient()
+  const authCheck = await checkAuth(true)
+  if (authCheck) return authCheck
 
   try {
     const contactData = await request.json()
