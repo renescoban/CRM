@@ -1,6 +1,7 @@
 import AdminUserList from "@/components/Admin-User-List";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 async function getUsers() {
   "use server";
@@ -11,22 +12,12 @@ async function getUsers() {
 
 export default async function AdminPage() {
   const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    // console.error("No active session")
+  const { data,  } = await supabase.auth.getUser()
+  if ( !data?.user) {
+    redirect('/login')
   }
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", session?.user.id)
-    .single();
-
-  if (error || profile?.role !== "admin") {
+  if ( data.user.user_metadata.role !== "admin") {
     // console.error("No admin role")
   }
 
@@ -37,7 +28,7 @@ export default async function AdminPage() {
     email: string;
   }[];
 
-  const filteredUsers = users.filter(user => user.id !== session?.user.id);
+  const filteredUsers = users.filter(user => user.id !== data?.user.id);
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>

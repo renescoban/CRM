@@ -25,6 +25,11 @@ export default function Header() {
               Reports
             </Link>
           </li>
+          <li>
+            <Link href="/admin" className="text-blue-600 hover:text-blue-800">
+              Admin
+            </Link>
+          </li>
         </ul>
       </nav>
     </header>

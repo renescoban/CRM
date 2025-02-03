@@ -40,17 +40,23 @@ export const updateSession = async (request: NextRequest) => {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  if (
-   user.data.user?.user_metadata.role !== "admin" &&
-    request.nextUrl.pathname.startsWith("/orders") ||
-    request.nextUrl.pathname.startsWith("/contacts") ||
-    request.nextUrl.pathname === "/reports" ||
-    request.nextUrl.pathname === "/protected" ||
-    request.nextUrl.pathname === "/activities" ||
-    request.nextUrl.pathname === "/admin"
-  ) {
+  if ( user.data.user?.user_metadata.role !== "admin" && isProtectedRoute(request.nextUrl.pathname) )
+   {
     return NextResponse.redirect(new URL("/no-admin", request.url));
   }
-
+  function isProtectedRoute(pathname:string) {
+    const protectedPaths = [
+      "/orders",
+      "/contacts",
+      "/reports",
+      "/protected",
+      "/activities",
+      "/admin",
+      // Add any other admin-only paths here
+    ];
+  
+    // Check if the pathname starts with any of the protected paths.  This handles sub-paths as well (e.g. /orders/details)
+    return protectedPaths.some(path => pathname.startsWith(path));
+  }
   return response;
 };
