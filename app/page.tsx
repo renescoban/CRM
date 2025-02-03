@@ -11,7 +11,9 @@ export default async function Dashboard() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata.role !== "admin") {
+  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user?.id).single()
+
+  if (!user || profile?.role !== "admin") {
     return <LandingPage />
   }
 

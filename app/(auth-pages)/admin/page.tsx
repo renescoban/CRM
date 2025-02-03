@@ -1,5 +1,4 @@
 import AdminUserList from "@/components/Admin-User-List";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 

@@ -39,8 +39,9 @@ export const updateSession = async (request: NextRequest) => {
   if ( user.error && !request.nextUrl.pathname.startsWith("/sign") ) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
-
-  if ( user.data.user?.user_metadata.role !== "admin" && isProtectedRoute(request.nextUrl.pathname) )
+  
+  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user.data.user?.id).single()
+  if ( profile?.role !== "admin" && isProtectedRoute(request.nextUrl.pathname) )
    {
     return NextResponse.redirect(new URL("/no-admin", request.url));
   }
@@ -52,11 +53,12 @@ export const updateSession = async (request: NextRequest) => {
       "/protected",
       "/activities",
       "/admin",
+     // "/",
       // Add any other admin-only paths here
     ];
   
     // Check if the pathname starts with any of the protected paths.  This handles sub-paths as well (e.g. /orders/details)
-    return protectedPaths.some(path => pathname.startsWith(path));
+    return protectedPaths.some(path => pathname === path || pathname.startsWith(path + "/"));//protectedPaths.some(path => pathname === path || pathname.startsWith(path + "/"));
   }
   return response;
 };

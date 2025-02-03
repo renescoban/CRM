@@ -18,9 +18,11 @@ export function encodedRedirect(
 
 
 export async function checkAuth(isAdminOnly = false) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
-  const { data: { user } } = await (await supabase).auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user?.id).single()
 
   if (!user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 })
@@ -28,7 +30,7 @@ export async function checkAuth(isAdminOnly = false) {
 
   if (isAdminOnly) {
 
-    if ( user.user_metadata.role !== "admin") {
+    if ( profile?.role !== "admin" ) {
       return Response.json({ error: "Forbidden" }, { status: 403 })
     }
   }

@@ -5,16 +5,14 @@ import OrderTable from '@/components/OrderTable'
 import { Order } from '@/types'
 import { OrderModel } from '@/models/OrderModel'
 import { Metadata } from 'next'
+import { getOrders } from '@/lib/actions'
 
 export const metadata: Metadata = {
   title: 'Orders',
   description: '...',
 }
 
-async function getOrders(): Promise<Order[]> {
-  const orders = await OrderModel.getAll()
-  return orders
-}
+
 
 export default async function Orders() {
   const orders = await getOrders()

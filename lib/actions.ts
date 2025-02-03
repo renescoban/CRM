@@ -16,7 +16,7 @@ export async function getOrders(): Promise<Order[]> {
   return orders
 }
 
-  export async function getContacts(){
+  export async function getContacts(): Promise<Contact[]>{
     const orders = await ContactModel.getAll()
     return orders
   }
@@ -42,30 +42,39 @@ export async function updateUserRole(formData: FormData) {
     id: formData.get("id"),
   };
 
-  if (rawFormData.role === "user") {
-    await supabase
-      .from("profiles")
-      .update({ role: "admin" })
-      .eq("id", rawFormData.id);
-    const { error } = await supabase.auth.updateUser({
-      // The user ID you want to update
-      data: {
-        role: "admin", // The new role you want to set
-      },
-    });
-  } else {
-    await supabase
-      .from("profiles")
-      .update({ role: "user" })
-      .eq("id", rawFormData.id);
-    const { error } = await supabase.auth.updateUser({
-      // The user ID you want to update
-      data: {
-        role: "user", // The new role you want to set
-      },
-    });
-  }
+  const newRole = rawFormData.role === "user" ? "admin" : "user"; // Determine the new role
 
-  console.log("User role updated: ", rawFormData);
-  redirect(`/admin`);
+  try {
+    // Update the profiles table
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ role: newRole })
+      .eq("id", rawFormData.id);
+
+    if (profileError) {
+      console.error("Error updating profile:", profileError);
+      // Handle the error appropriately, e.g., throw an error or return an error message
+    }
+/*
+    // Update Supabase Auth user metadata (if needed and configured)
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        user_metadata: {  // Important: Use user_metadata
+          role: newRole,
+        },
+      },
+    });
+
+    if (authError) {
+      console.error("Error updating auth user:", authError);
+      // Handle the error appropriately
+      return { error: "Error updating auth user" };  // Example
+    }
+*/
+    console.log("User role updated:", rawFormData);
+    redirect(`/admin`); // Redirect after successful updates
+
+  } catch (error) {
+    console.error("Unexpected error:", error);
+  }
 }

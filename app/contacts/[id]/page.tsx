@@ -15,7 +15,6 @@ export default  function ContactDetails() {
   const [activities, setActivities] = useState<Activity[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [tags, setTags] = useState<Tag[]>([])
-  const [newTag, setNewTag] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   const updateActivity = async ()=>{
